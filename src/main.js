@@ -7,6 +7,9 @@ require.ensure(
         var App = require("./App.vue").default;
         var router = require("./router").default;
         require("./css/style.css");
+        require("./css/loginstyle.css");
+        require("./css/docstyle.css");
+        require("./css/homestyle.css");
 
         var app = createApp(App);
         app.use(router);

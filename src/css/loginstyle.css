@@ -1,0 +1,25 @@
+.login-bg {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.login-box {
+    width: 400px;
+    padding: 20px;
+    box-shadow: 2px 2px 3px 1px var(--shadow-color);
+    box-sizing: border-box;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+}
+.login-box-title {
+    text-align: center;
+    font-size: 30px;
+    margin-bottom: 20px;
+    color: var(--text-color);
+}
+.full-width-button,
+.full-width-input {
+    width: 100%;
+    margin-bottom: 10px;
+}

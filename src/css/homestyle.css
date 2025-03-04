@@ -1,0 +1,51 @@
+#home-view {
+    display: flex;
+}
+
+#menu-btn-home,
+#night-btn-home {
+    font-family: "iconfont";
+    font-size: 1.5em;
+    padding: 1em 1em;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    user-select: none;
+    color: var(--text-color);
+    display: inline-flex;
+}
+#menu-btn-home:hover,
+#night-btn-home:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+#night-btn-home {
+    justify-content: flex-end;
+}
+
+#head-title-home {
+    text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1.5em;
+    font-weight: 700;
+    padding: 1em 0;
+    color: var(--text-color);
+    display: inline-flex;
+    justify-content: center;
+    flex: 1;
+}
+
+#main-left {
+    width: 200px;
+    height: 100vh;
+}
+#main-main {
+    flex: 1;
+    height: 100vh;
+}
+
+#home-main {
+    flex: 1;
+    height: 100vh;
+    overflow: auto;
+    display: flex;
+}
