@@ -34,18 +34,22 @@
     flex: 1;
 }
 
-#main-left {
+.main-left {
     width: 200px;
     height: 100vh;
 }
-#main-main {
+.main-main {
     flex: 1;
     height: 100vh;
 }
 
-#home-main {
+.home-main {
     flex: 1;
     height: 100vh;
     overflow: auto;
     display: flex;
+}
+
+.main-left {
+    background-color: #000000;
 }

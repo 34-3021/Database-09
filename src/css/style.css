@@ -1,10 +1,10 @@
 @font-face {
     font-family: "iconfont"; /* Project id 4846178 */
-    src: url("//at.alicdn.com/t/c/font_4846178_6oafvng2mev.woff2?t=1741081700762")
+    src: url("//at.alicdn.com/t/c/font_4846178_l93d79h847.woff2?t=1741155037343")
             format("woff2"),
-        url("//at.alicdn.com/t/c/font_4846178_6oafvng2mev.woff?t=1741081700762")
+        url("//at.alicdn.com/t/c/font_4846178_l93d79h847.woff?t=1741155037343")
             format("woff"),
-        url("//at.alicdn.com/t/c/font_4846178_6oafvng2mev.ttf?t=1741081700762")
+        url("//at.alicdn.com/t/c/font_4846178_l93d79h847.ttf?t=1741155037343")
             format("truetype");
 }
 .fade-enter-from,
@@ -12,14 +12,24 @@
     transform: translateX(20px);
     opacity: 0;
 }
+.fade-anl-enter-from,
+.fade-anl-leave-to {
+    opacity: 0;
+}
 .fade-enter-to,
-.fade-leave-from {
+.fade-leave-from,
+.fade-anl-enter-to,
+.fade-anl-leave-from {
     opacity: 1;
 }
 .fade-enter-active {
     transition: all 0.7s ease;
 }
-.fade-leave-active {
+.fade-anl-enter-active {
+    transition: all 0.3s ease;
+}
+.fade-leave-active,
+.fade-anl-leave-active {
     transition: all 0.3s cubic-bezier(1, 0.6, 0.6, 1);
 }
 

@@ -18,6 +18,7 @@ const toggleDarkMode = () => {
     document.documentElement.classList.toggle("dark-mode");
 };
 provide("toggleDarkMode", toggleDarkMode);
+provide("darkModeEnabled", darkModeEnabled);
 
 //watch(loginState, checkLoginState, { immediate: true });
 

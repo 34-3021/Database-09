@@ -2,11 +2,7 @@
     <div id="not-logged-in-view">
         <NotLoggedInMenu id="menu"></NotLoggedInMenu>
         <div id="main">
-            <div id="head-bar">
-                <div id="menu-btn" @click="toggleMenu">&#xe7f4;</div>
-                <div id="head-title">InfiniDoc</div>
-                <div id="night-btn" @click="toggleDarkMode">&#xe7f4;</div>
-            </div>
+            <HeadBar>InfiniDoc</HeadBar>
             <div id="main-desc">
                 <div class="feature">
                     <div class="feature-title">
@@ -87,7 +83,8 @@
 <script setup>
 import { RouterLink } from "vue-router";
 import NotLoggedInMenu from "./NotLoggedInMenu.vue";
-import { onMounted, ref, inject } from "vue";
+import HeadBar from "./headBar.vue";
+import { onMounted, ref, inject, provide } from "vue";
 
 const menuOn = ref(false);
 const toggleMenu = () => {
@@ -100,6 +97,7 @@ const toggleMenu = () => {
         menuOn.value = true;
     }
 };
+provide("toggleMenu", toggleMenu);
 
 const toggleDarkModeParent = inject("toggleDarkMode");
 
