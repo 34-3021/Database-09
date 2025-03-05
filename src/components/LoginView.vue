@@ -14,7 +14,10 @@
                 type="password"
             ></el-input
             ><br />
-            <el-button type="primary" @click="" class="full-width-button"
+            <el-button
+                type="primary"
+                @click="handleLogin"
+                class="full-width-button"
                 >确认</el-button
             ><br />
             <el-button @click="goToRegister" class="full-width-button"
@@ -36,6 +39,10 @@ const goHome = () => {
 };
 const goToRegister = () => {
     router.push("/register");
+};
+const handleLogin = () => {
+    //todo
+    router.push("/home");
 };
 
 const username = ref("");

@@ -21,7 +21,10 @@
             ></el-input
             ><br />
 
-            <el-button type="primary" @click="" class="full-width-button"
+            <el-button
+                type="primary"
+                @click="handleRegister"
+                class="full-width-button"
                 >确认</el-button
             ><br />
             <el-button @click="goToLogin" class="full-width-button"
@@ -35,6 +38,7 @@
 </template>
 <script setup>
 import { useRouter } from "vue-router";
+import { ref } from "vue";
 
 const router = useRouter();
 const goHome = () => {
@@ -43,4 +47,11 @@ const goHome = () => {
 const goToLogin = () => {
     router.push("/login");
 };
+const handleRegister = () => {
+    //todo
+    router.push("/home");
+};
+
+const username = ref("");
+const password = ref("");
 </script>

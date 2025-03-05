@@ -4,12 +4,16 @@
         <div id="menu-selections">
             <div class="menu-selection" @click="">论文库</div>
             <div class="menu-selection" @click="">对话</div>
-            <div class="menu-selection" @click="">退出登录</div>
+            <div class="menu-selection" @click="logout">退出登录</div>
         </div>
     </div>
 </template>
 <script setup>
 import { useRouter } from "vue-router";
+
+const logout = () => {
+    router.push("/");
+};
 
 const router = useRouter();
 </script>
