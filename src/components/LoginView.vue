@@ -12,6 +12,7 @@
                 placeholder="密码"
                 class="full-width-input"
                 type="password"
+                show-password
             ></el-input
             ><br />
             <el-button
@@ -23,6 +24,13 @@
             <el-button @click="goToRegister" class="full-width-button"
                 >注册</el-button
             ><br />
+            或<br />
+            <el-button
+                @click="loginWithTAuth"
+                class="full-width-button"
+                v-loading="tauthButtonBusy"
+                >使用 TAuth 登录</el-button
+            ><br />
             <el-button type="info" @click="goHome" class="full-width-button"
                 >返回</el-button
             >
@@ -31,7 +39,9 @@
 </template>
 <script setup>
 import { useRouter } from "vue-router";
-import { ref } from "vue";
+import { ref, inject } from "vue";
+
+import { loginTAuth, loginNative } from "./tauth";
 
 const router = useRouter();
 const goHome = () => {
@@ -40,9 +50,50 @@ const goHome = () => {
 const goToRegister = () => {
     router.push("/register");
 };
-const handleLogin = () => {
-    //todo
-    router.push("/home");
+const handleLogin = async () => {
+    let res = await loginNative(username.value, password.value);
+    if (res.status) {
+        ElMessage({
+            message: res.message,
+            type: "success",
+        });
+        //router.push("/login");
+        loginState.value.loggedIn = true;
+        loginState.value.token = res.token;
+        //memorize res.token
+        localStorage.setItem("infinidoc_token", res.token);
+        router.push("/home");
+    } else {
+        ElMessage({
+            message: res.message,
+            type: "error",
+        });
+    }
+};
+const tauthButtonBusy = ref(false);
+
+const loginState = inject("loginState");
+
+const loginWithTAuth = async () => {
+    tauthButtonBusy.value = true;
+    let res = await loginTAuth();
+    if (res.status) {
+        ElMessage({
+            message: res.message,
+            type: "success",
+        });
+        loginState.value.loggedIn = true;
+        loginState.value.token = res.token;
+        //memorize res.token
+        localStorage.setItem("infinidoc_token", res.token);
+        router.push("/home");
+    } else {
+        ElMessage({
+            message: res.message,
+            type: "error",
+        });
+    }
+    tauthButtonBusy.value = false;
 };
 
 const username = ref("");

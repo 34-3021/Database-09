@@ -16,11 +16,16 @@
 import { useRouter } from "vue-router";
 import { inject } from "vue";
 
-const logout = () => {
-    router.push("/");
-};
 //provide("switchPage", (page) => switchPage(page));
 const switchPage = inject("switchPage");
+const loginState = inject("loginState");
 
 const router = useRouter();
+
+const logout = () => {
+    loginState.value.loggedIn = false;
+    loginState.value.token = "";
+    localStorage.removeItem("infinidoc_token");
+    router.push("/");
+};
 </script>

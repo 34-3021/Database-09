@@ -127,3 +127,14 @@ dist
 .pnp.*
 
 apis
+
+util/
+test/
+
+backend/dbpassword.py
+backend/__pycache__/
+#venv
+backend/backend/
+backend/cert/
+
+cert/
