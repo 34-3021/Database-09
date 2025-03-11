@@ -12,6 +12,7 @@ import Menu from "./Menu.vue";
 import { onMounted, ref, inject, provide, shallowRef } from "vue";
 import Chat from "./Chat.vue";
 import Settings from "./Settings.vue";
+import Papers from "./Papers.vue";
 
 const menuOn = ref(false);
 
@@ -34,7 +35,9 @@ const switchPage = (page) => {
     currentPage.value = page;
     if (page === "Chat") {
         curcomponent.value = Chat;
-    } else {
+    } else if (page === "Papers") {
+        curcomponent.value = Papers;
+    } else if (page === "Settings") {
         curcomponent.value = Settings;
     }
 };

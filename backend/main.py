@@ -1,7 +1,9 @@
-from typing import Union
+from typing import Annotated, Union
 
 from fastapi import FastAPI
 from fastapi import HTTPException
+from fastapi import File, UploadFile, Header
+from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -9,6 +11,7 @@ import mysql.connector
 from dbpassword import DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE
 
 import authenticate
+import filel
 app = FastAPI()
 
 
@@ -19,6 +22,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Fname, Content-Disposition"]
 )
 
 
@@ -93,3 +97,65 @@ def login(account: NativeAccount):
         mysql_connection, username, password)
     mysql_connection.close()
     return {"success": success, "token": token, "error_message": error_message}
+
+
+@app.post("/upload")
+async def upload_file(file: UploadFile, infiniDocToken: Annotated[str | None, Header()] = None):
+    mysql_connection = mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
+    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
+    if not success:
+        mysql_connection.close()
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    result = await filel.processUpload(mysql_connection, infiniDocToken, file)
+    mysql_connection.close()
+
+    # Process the uploaded file here
+    return result
+
+
+@app.get("/fileList")
+def file_list(infiniDocToken: Annotated[str | None, Header()] = None, limit: int = 10, offset: int = 0):
+    mysql_connection = mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
+    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
+    if not success:
+        mysql_connection.close()
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    files, totalfiles = filel.getUserFileList(
+        mysql_connection, infiniDocToken, limit, offset)
+
+    mysql_connection.close()
+    return {"files": files, "totalfiles": totalfiles}
+
+
+@app.get("/download")
+def download_file(seq: int, infiniDocToken: Annotated[str | None, Header()] = None):
+    mysql_connection = mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
+    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
+    if not success:
+        mysql_connection.close()
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    file, filename = filel.getFile(mysql_connection, infiniDocToken, seq)
+    mysql_connection.close()
+
+    return Response(content=file, media_type="application/octet-stream", headers={"Content-Disposition": f"attachment; filename={filename}", "Fname": filename})
+
+
+@app.get("/delete")
+def delete_file(seq: int, infiniDocToken: Annotated[str | None, Header()] = None):
+    mysql_connection = mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
+    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
+    if not success:
+        mysql_connection.close()
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    success = filel.deleteFile(mysql_connection, infiniDocToken, seq)
+    mysql_connection.close()
+
+    return {"success": success}

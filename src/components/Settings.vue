@@ -2,7 +2,7 @@
     <div class="home-main">
         <div class="main-main">
             <HeadBar>InfiniDoc 设置</HeadBar>
-            Unique ID:{{ uniqueid }}
+            <div class="content">Unique ID:{{ uniqueid }}</div>
         </div>
     </div>
 </template>

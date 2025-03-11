@@ -177,3 +177,13 @@ body {
     color: #a8a8a8;
     text-decoration: underline;
 }
+
+.content {
+    padding: 15px;
+    color: var(--text-color);
+}
+
+.uploader {
+    width: 300px;
+    background-color: rgba(127, 127, 127, 0.05);
+}
