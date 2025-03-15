@@ -5,7 +5,7 @@
             <div class="menu-selection" @click="switchPage('Papers')">
                 论文库
             </div>
-            <div class="menu-selection" @click="switchPage('Chat')">对话</div>
+            <div class="menu-selection" @click="switchPage('Chat')">写作</div>
 
             <div class="menu-selection" @click="switchPage('Settings')">
                 设置

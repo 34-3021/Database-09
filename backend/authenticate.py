@@ -180,3 +180,33 @@ def loginWithTAuthToken(mysql_connection: mysql_connection.MySQLConnection, toke
         return True, infinidoc_token
     else:
         return False, ""
+
+
+def getSettings(mysql_connection: mysql_connection.MySQLConnection, unique_id: str):
+    '''
+    @param unique_id: The unique identifier of the user
+    @return: The settings of the user
+    '''
+    mysql_cursor = mysql_connection.cursor()
+    mysql_cursor.execute(
+        "SELECT `setting`,`value` FROM `user_settings` WHERE `UNIQUE_ID` = %s;", (unique_id,))
+    settings = mysql_cursor.fetchall()
+    # convert to dict
+    settings = {setting: value for setting, value in settings}
+    mysql_cursor.close()
+    return settings
+
+
+def setSettings(mysql_connection: mysql_connection.MySQLConnection, unique_id: str, settings: dict):
+    '''
+    @param unique_id: The unique identifier of the user
+    @param settings: The settings to be set
+    @return: success
+    '''
+    mysql_cursor = mysql_connection.cursor()
+    for setting, value in settings.items():
+        mysql_cursor.execute(
+            "INSERT INTO `user_settings` (`UNIQUE_ID`, `setting`, `value`) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE `value` = %s;", (unique_id, setting, value, value))
+    mysql_connection.commit()
+    mysql_cursor.close()
+    return True

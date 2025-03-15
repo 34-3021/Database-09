@@ -12,6 +12,9 @@ from dbpassword import DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE
 
 import authenticate
 import filel
+import largeModel
+import projectManager
+
 app = FastAPI()
 
 
@@ -33,6 +36,19 @@ class Token(BaseModel):
 class NativeAccount(BaseModel):
     username: str
     password: str
+
+
+class Settings(BaseModel):
+    data: dict
+
+
+class getModelsRequest(BaseModel):
+    endpoint: str
+    api_key: str
+
+
+class createProjectRequest(BaseModel):
+    project_name: str
 
 
 @app.get("/")
@@ -159,3 +175,67 @@ def delete_file(seq: int, infiniDocToken: Annotated[str | None, Header()] = None
     mysql_connection.close()
 
     return {"success": success}
+
+
+@app.get("/user/settings")
+def get_user_settings(infiniDocToken: Annotated[str | None, Header()] = None):
+    mysql_connection = mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
+    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
+    if not success:
+        mysql_connection.close()
+        raise HTTPException(status_code=401, detail="Invalid token")
+    unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
+    settings = authenticate.getSettings(mysql_connection, unique_id)
+    mysql_connection.close()
+    return {"success": success, "settings": settings}
+
+
+@app.post("/user/settings/set")
+def set_user_settings(payload: Settings, infiniDocToken: Annotated[str | None, Header()] = None):
+    mysql_connection = mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
+    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
+    if not success:
+        mysql_connection.close()
+        raise HTTPException(status_code=401, detail="Invalid token")
+    unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
+    success = authenticate.setSettings(
+        mysql_connection, unique_id, payload.data)
+    mysql_connection.close()
+    return {"success": success}
+
+
+@app.get("/project/get")
+def get_projects(infiniDocToken: Annotated[str | None, Header()] = None):
+    mysql_connection = mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
+    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
+    if not success:
+        mysql_connection.close()
+        raise HTTPException(status_code=401, detail="Invalid token")
+    unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
+    projects = projectManager.getProjects(mysql_connection, unique_id)
+    mysql_connection.close()
+    return {"projects": projects}
+
+
+@app.post("/project/create")
+def create_project(req: createProjectRequest, infiniDocToken: Annotated[str | None, Header()] = None):
+    mysql_connection = mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
+    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
+    if not success:
+        mysql_connection.close()
+        raise HTTPException(status_code=401, detail="Invalid token")
+    unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
+    id = projectManager.createProject(
+        mysql_connection, unique_id, req.project_name)
+    mysql_connection.close()
+    return {"success": success, "id": id}
+
+
+@app.post("/llm/getModels")
+def get_models(request: getModelsRequest):
+    models = largeModel.get_models(request.endpoint, request.api_key)
+    return models

@@ -20,20 +20,17 @@
                     </div>
                 </div>
                 <div class="feature">
-                    <div class="feature-title">多种论文导入方式</div>
+                    <div class="feature-title">论文导入方式</div>
                     <div class="feature-description">
-                        既支持 Endnote、Zotero 等引用管理软件导入<span
-                            class="sup"
+                        使用 arXiv 下载的 LaTeX 源代码<span class="sup"
                             >[3]</span
-                        >，也支持 PDF、Word 等文件导入<span class="sup"
-                            >[4]</span
-                        >。
+                        >，也支持文本文件导入<span class="sup">[4]</span>。
                     </div>
                 </div>
                 <div class="feature">
                     <div class="feature-title">自动的引用联想</div>
                     <div class="feature-description">
-                        当您提出问题时，如果相关文本涉及引用到的文献，且该文献已加入论文库，大模型将考虑被引用文献的内容。
+                        当您提出要求时，如果相关文本涉及引用到的文献，且该文献已加入论文库，大模型将考虑被引用文献的内容。
                     </div>
                 </div>
             </div>
@@ -51,10 +48,12 @@
                         聊天记录等信息将经过加密，您的论文原始文件将由第三方提供的存储方案解决。我们保证信息不会在我们管理的范围内泄露。关于更详细信息，请参考我们的隐私政策。
                     </div>
                     <div>
-                        [3] Endnote、Zotero 等引用管理软件导入时，需要同时包含
-                        PDF 文件，PDF 文件的获取方式应当由您负责，我们无法提供
-                        PDF
-                        文件的下载服务。与此同时，由于您上传文本的版权问题导致的任何法律问题，我们不承担任何责任。
+                        [3]
+                        由于您上传文本的版权问题导致的任何法律问题，我们不承担任何责任。arXiv
+                        运营由康奈尔大学的 arXiv 领导团队和 arXiv
+                        员工负责。arXiv 的管理由领导团队领导，并受到 arXiv
+                        编辑顾问委员会、机构顾问委员会和科学顾问委员会的指导。arXiv
+                        是一个社区支持的资源，由康奈尔大学、西蒙斯基金会、成员机构和捐助者资助。
                     </div>
                     <div>
                         [4]
