@@ -7,9 +7,24 @@
             :key="pj.project_id"
             @click="selectProject(pj.project_id)"
         >
-            {{ pj.project_name }}
+            <span class="project-name">{{ pj.project_name }}</span>
+            <el-popconfirm
+                title="确定删除吗"
+                confirm-button-text="删除"
+                confirm-button-type="text"
+                cancel-button-text="取消"
+                cancel-button-type="primary"
+                @confirm="deleteProject(pj.project_id)"
+            >
+                <template #reference>
+                    <el-button type="danger">删除</el-button></template
+                >
+            </el-popconfirm>
         </div>
-        <el-button type="primary" @click="newProject('Untitled')"
+        <el-button
+            type="primary"
+            @click="newProject('Untitled')"
+            v-loading="newProjectLoading"
             >新建项目</el-button
         >
     </div>
@@ -22,6 +37,8 @@ const loginState = inject("loginState");
 
 const selectProject = inject("selectProject");
 
+const newProjectLoading = ref(false);
+
 const getProjects = async () => {
     let res = await fetch("https://local.tmysam.top:8001/project/get", {
         headers: {
@@ -32,19 +49,40 @@ const getProjects = async () => {
     projects.value = data.projects;
 };
 
-const newProject = async (name) => {
-    let res = await fetch("https://local.tmysam.top:8001/project/create", {
+const deleteProject = async (project_id) => {
+    let res = await fetch("https://local.tmysam.top:8001/project/delete", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             infiniDocToken: loginState.value.token,
         },
-
         body: JSON.stringify({
-            project_name: name,
+            project_id: project_id,
         }),
     });
     let data = await res.json();
+    getProjects();
+};
+
+const newProject = async (name) => {
+    newProjectLoading.value = true;
+    try {
+        let res = await fetch("https://local.tmysam.top:8001/project/create", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                infiniDocToken: loginState.value.token,
+            },
+
+            body: JSON.stringify({
+                project_name: name,
+            }),
+        });
+        let data = await res.json();
+    } finally {
+        newProjectLoading.value = false;
+    }
+
     getProjects();
 };
 const projects = ref([]);
@@ -58,5 +96,7 @@ watch(
     }
 );
 
-onMounted(() => {});
+onMounted(() => {
+    getProjects();
+});
 </script>

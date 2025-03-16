@@ -44,6 +44,16 @@ html.dark-mode {
     --bg-color: #111;
     --footnote-color: rgba(255, 255, 255, 0.56);
     --shadow-color: rgba(255, 255, 255, 0.2);
+
+    --el-text-color-regular: #fff;
+    --el-input-bg-color: #222;
+    --el-fill-color-blank: #222;
+    --el-table-tr-bg-color: #444;
+    --el-table-header-bg-color: #444;
+    --el-bg-color: #444;
+    --el-disabled-bg-color: #333;
+    --el-table-border-color: #777;
+    --el-table-border: 1px solid #777;
 }
 body {
     margin: 0;
@@ -85,6 +95,7 @@ body {
     color: #cfcfcf;
     cursor: pointer;
     transition: background-color 0.3s;
+    display: flex;
 }
 .menu-selection:hover {
     background-color: rgba(255, 255, 255, 0.2);
@@ -186,4 +197,26 @@ body {
 .uploader {
     width: 300px;
     background-color: rgba(127, 127, 127, 0.05);
+}
+
+.project-name {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.project {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.paragraphs {
+    flex: 1;
+}
+
+.chatbox {
+    height: 300px;
+    overflow-y: auto;
+    /* up border */
+    border-top: 2px solid #ccc;
 }

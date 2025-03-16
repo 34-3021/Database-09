@@ -30,3 +30,17 @@ def createProject(mysql_connection: mysql_connection.MySQLConnection, unique_id:
     mysql_cursor.close()
 
     return id
+
+
+def deleteProject(mysql_connection: mysql_connection.MySQLConnection, unique_id: str, project_id: int):
+    '''
+    @param unique_id: The unique identifier of the user
+    @param project_id: The id of the project
+    @return: The success of the operation
+    '''
+    mysql_cursor = mysql_connection.cursor()
+    mysql_cursor.execute(
+        "DELETE FROM `user_projects` WHERE `UNIQUE_ID`=%s AND `project_id`=%s;", (unique_id, project_id))
+    mysql_connection.commit()
+    mysql_cursor.close()
+    return True

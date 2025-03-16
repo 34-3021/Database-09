@@ -51,6 +51,10 @@ class createProjectRequest(BaseModel):
     project_name: str
 
 
+class deleteProjectRequest(BaseModel):
+    project_id: int
+
+
 @app.get("/")
 def read_root():
     raise HTTPException(
@@ -233,6 +237,21 @@ def create_project(req: createProjectRequest, infiniDocToken: Annotated[str | No
         mysql_connection, unique_id, req.project_name)
     mysql_connection.close()
     return {"success": success, "id": id}
+
+
+@app.post("/project/delete")
+def delete_project(req: deleteProjectRequest, infiniDocToken: Annotated[str | None, Header()] = None):
+    mysql_connection = mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
+    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
+    if not success:
+        mysql_connection.close()
+        raise HTTPException(status_code=401, detail="Invalid token")
+    unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
+    success = projectManager.deleteProject(
+        mysql_connection, unique_id, req.project_id)
+    mysql_connection.close()
+    return {"success": success}
 
 
 @app.post("/llm/getModels")
