@@ -71,9 +71,42 @@
 .paragraph {
     background-color: rgba(127, 127, 127, 0.2);
     padding: 15px 15px;
-    margin: 10px 10px;
+    margin: 0 10px;
     border: 2px solid transparent;
+    display: flex;
+    transition: border 0.3s;
+}
+.paragraph-divider {
+    margin: 0px 10px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: color 0.3s, background-color 0.3s;
+}
+.paragraph-divider:hover {
+    background-color: var(--bg-color-hover);
 }
 .paragraph-selected {
     border: 2px solid #23a0e3;
+}
+.paragraph-control {
+    display: inline-block;
+}
+.paragraph-main {
+    display: inline-block;
+    flex: 1;
+}
+.project-name-input {
+    display: inline-block;
+    margin: 5px 0px 5px 60px;
+    width: 200px;
+}
+.project-edit-status {
+    display: inline-block;
+}
+.new-project-button {
+    margin: 0 1em;
 }

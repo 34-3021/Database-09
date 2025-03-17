@@ -1,6 +1,6 @@
 <template>
     <div id="menu-title">项目</div>
-    <div id="menu-selections">
+    <div id="menu-selections" v-loading="loading">
         <div
             class="menu-selection"
             v-for="pj in projects"
@@ -24,6 +24,7 @@
         <el-button
             type="primary"
             @click="newProject('Untitled')"
+            class="new-project-button"
             v-loading="newProjectLoading"
             >新建项目</el-button
         >
@@ -39,15 +40,26 @@ const selectProject = inject("selectProject");
 
 const newProjectLoading = ref(false);
 
+const loading = ref(false);
+
 const getProjects = async () => {
-    let res = await fetch("https://local.tmysam.top:8001/project/get", {
-        headers: {
-            infiniDocToken: loginState.value.token,
-        },
-    });
-    let data = await res.json();
-    projects.value = data.projects;
+    loading.value = true;
+    try {
+        let res = await fetch("https://local.tmysam.top:8001/project/get", {
+            headers: {
+                infiniDocToken: loginState.value.token,
+            },
+        });
+        let data = await res.json();
+        projects.value = data.projects;
+    } finally {
+        loading.value = false;
+    }
 };
+
+defineExpose({
+    getProjects,
+});
 
 const deleteProject = async (project_id) => {
     let res = await fetch("https://local.tmysam.top:8001/project/delete", {

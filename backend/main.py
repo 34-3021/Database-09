@@ -55,6 +55,14 @@ class deleteProjectRequest(BaseModel):
     project_id: int
 
 
+class renameProjectRequest(BaseModel):
+    new_name: str
+
+
+class saveProjectRequest(BaseModel):
+    paragraphs: str
+
+
 @app.get("/")
 def read_root():
     raise HTTPException(
@@ -250,6 +258,66 @@ def delete_project(req: deleteProjectRequest, infiniDocToken: Annotated[str | No
     unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
     success = projectManager.deleteProject(
         mysql_connection, unique_id, req.project_id)
+    mysql_connection.close()
+    return {"success": success}
+
+
+@app.post("/project/rename/{project_id}")
+def rename_project(project_id: int, req: renameProjectRequest, infiniDocToken: Annotated[str | None, Header()] = None):
+    mysql_connection = mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
+    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
+    if not success:
+        mysql_connection.close()
+        raise HTTPException(status_code=401, detail="Invalid token")
+    unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
+    success = projectManager.renameProject(
+        mysql_connection, unique_id, project_id, req.new_name)
+    mysql_connection.close()
+    return {"success": success}
+
+
+@app.get("/project/getparagraphs/{project_id}")
+def get_paragraphs(project_id: int, infiniDocToken: Annotated[str | None, Header()] = None):
+    mysql_connection = mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
+    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
+    if not success:
+        mysql_connection.close()
+        raise HTTPException(status_code=401, detail="Invalid token")
+    unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
+    paragraphs = projectManager.getParagraphs(
+        mysql_connection, unique_id, project_id)
+    mysql_connection.close()
+    return {"paragraphs": paragraphs}
+
+
+@app.get("/project/name/{project_id}")
+def get_project_name(project_id: int, infiniDocToken: Annotated[str | None, Header()] = None):
+    mysql_connection = mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
+    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
+    if not success:
+        mysql_connection.close()
+        raise HTTPException(status_code=401, detail="Invalid token")
+    unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
+    project_name = projectManager.getProjectName(
+        mysql_connection, unique_id, project_id)
+    mysql_connection.close()
+    return {"project_name": project_name}
+
+
+@app.post("/project/save/{project_id}")
+def save_project(project_id: int, req: saveProjectRequest, infiniDocToken: Annotated[str | None, Header()] = None):
+    mysql_connection = mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
+    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
+    if not success:
+        mysql_connection.close()
+        raise HTTPException(status_code=401, detail="Invalid token")
+    unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
+    success = projectManager.saveProject(
+        mysql_connection, unique_id, project_id, req.paragraphs)
     mysql_connection.close()
     return {"success": success}
 
