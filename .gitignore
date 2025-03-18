@@ -139,3 +139,7 @@ backend/cert/
 
 cert/
 userdata/
+
+algo/keys.py
+
+algo/__pycache__/

@@ -63,6 +63,13 @@ class saveProjectRequest(BaseModel):
     paragraphs: str
 
 
+class chatRequest(BaseModel):
+    project_name: str
+    paragraph_title: str
+    paragraph_current_content: str
+    user_prompt: str
+
+
 @app.get("/")
 def read_root():
     raise HTTPException(
@@ -326,3 +333,18 @@ def save_project(project_id: int, req: saveProjectRequest, infiniDocToken: Annot
 def get_models(request: getModelsRequest):
     models = largeModel.get_models(request.endpoint, request.api_key)
     return models
+
+
+@app.post("/project/chat")
+def chat_project(req: chatRequest, infiniDocToken: Annotated[str | None, Header()] = None):
+    mysql_connection = mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
+    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
+    if not success:
+        mysql_connection.close()
+        raise HTTPException(status_code=401, detail="Invalid token")
+    unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
+    # todo implement chat
+    response = req.user_prompt+" received"
+    mysql_connection.close()
+    return {"success": success, "response": response}

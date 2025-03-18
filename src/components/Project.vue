@@ -31,12 +31,29 @@
             class="chatbox"
             v-if="projectData.paragraphs && projectData.paragraphs.length > 0"
         >
-            <Dialog
-                v-for="chat in projectData.paragraphs[selectedParagraph]
-                    .chatHistory"
-                :role="chat.role"
-                :content="chat.content"
-            ></Dialog>
+            <div class="dialogs">
+                <Dialog
+                    v-for="chat in projectData.paragraphs[selectedParagraph]
+                        .chatHistory"
+                    :role="chat.role"
+                    :content="chat.content"
+                ></Dialog>
+            </div>
+            <div class="chat-input">
+                <form
+                    @submit.prevent="sendMessage"
+                    v-loading="userInputLoading"
+                >
+                    <el-input
+                        placeholder="输入聊天内容"
+                        v-model="userInput"
+                        class="user-input-prompt"
+                    ></el-input>
+                    <el-button type="primary" @click="sendMessage">
+                        发送
+                    </el-button>
+                </form>
+            </div>
         </div>
     </div>
 </template>
@@ -59,7 +76,51 @@ const loginState = inject("loginState");
 const loading = ref(false);
 const new_name_loading = ref(false);
 
+const userInput = ref("");
+const userInputLoading = ref(false);
+
 const edited = ref(false);
+
+const sendMessage = async () => {
+    userInputLoading.value = true;
+    if (userInput.value.trim() === "") return;
+    projectData.value.paragraphs[selectedParagraph.value].chatHistory.push({
+        role: "User",
+        content: userInput.value,
+    });
+    // /project/chat {project_name,paragraph_title,paragraph_current_content,user_prompt}
+
+    let res = await fetch("https://local.tmysam.top:8001/project/chat", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            infiniDocToken: loginState.value.token,
+        },
+        body: JSON.stringify({
+            project_name: projectData.value.project_name,
+            paragraph_title:
+                projectData.value.paragraphs[selectedParagraph.value].title,
+            paragraph_current_content:
+                projectData.value.paragraphs[selectedParagraph.value].content,
+            user_prompt: userInput.value,
+        }),
+    });
+    let data = await res.json();
+    userInputLoading.value = false;
+    if (!data.success) {
+        ElNotification({
+            title: "错误",
+            message: data.message,
+            type: "error",
+        });
+        return;
+    }
+    userInput.value = "";
+    projectData.value.paragraphs[selectedParagraph.value].chatHistory.push({
+        role: "AI",
+        content: data.response,
+    });
+};
 
 const moveup = (index) => {
     if (index === 0) return;
@@ -114,24 +175,6 @@ const projectData = ref({
 //                 {
 //                     role: "User",
 //                     content: "xxxx",
-//                 },
-//                 {
-//                     role: "Bot",
-//                     content: "xxxx",
-//                 },
-//             ],
-//         },
-//         {
-//             title: "paragraph2",
-//             content: "content2",
-//             chatHistory: [
-//                 {
-//                     role: "User",
-//                     content: "yyyy",
-//                 },
-//                 {
-//                     role: "Bot",
-//                     content: "yyyy",
 //                 },
 //             ],
 //         },
@@ -196,7 +239,7 @@ const loadProject = async () => {
 };
 
 const saveProject = async () => {
-    ElNotification({
+    let notification_instance = ElNotification({
         title: "保存中",
         message: "正在保存项目",
         type: "info",
@@ -228,6 +271,7 @@ const saveProject = async () => {
             type: "error",
         });
     }
+    notification_instance.close();
     edited.value = false;
 };
 

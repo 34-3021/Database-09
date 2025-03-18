@@ -110,3 +110,22 @@
 .new-project-button {
     margin: 0 1em;
 }
+
+.chatbox {
+    height: 300px;
+    overflow-y: auto;
+    /* up border */
+    border-top: 2px solid #ccc;
+    display: flex;
+    flex-direction: column;
+}
+
+.dialogs {
+    flex: 1;
+}
+.chat-input {
+    height: 35px;
+}
+.user-input-prompt {
+    width: 500px;
+}

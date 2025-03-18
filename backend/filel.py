@@ -3,6 +3,9 @@ import mysql.connector.connection as mysql_connection
 import authenticate
 import hashlib
 import os
+import requests
+from pypdf import PdfReader
+from pypdf.errors import PdfReadError
 
 
 async def processUpload(mysql_connection: mysql_connection.MySQLConnection, token: str, upload: UploadFile):
@@ -14,6 +17,11 @@ async def processUpload(mysql_connection: mysql_connection.MySQLConnection, toke
     # get unique id
     unique_id = authenticate.getUniqueID(mysql_connection, token)
     if unique_id == None:
+        return False
+
+    try:
+        PdfReader(upload.file)
+    except PdfReadError:
         return False
 
     # calc hash
@@ -56,6 +64,11 @@ async def processUpload(mysql_connection: mysql_connection.MySQLConnection, toke
         "INSERT INTO `user_files` (`UNIQUE_ID`, `fileid`, `name`) VALUES (%s, %s, %s);", (unique_id, fileid, upload.filename))
     mysql_connection.commit()
     mysql_cursor.close()
+
+    # https://local.tmysam.top:8005/process
+    # post {"filename":hash,"unique_id":unique_id}
+    requests.post("http://localhost:8005/process", json={
+        "filename": hash, "unique_id": unique_id})
     return True
 
 
