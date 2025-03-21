@@ -1,6 +1,6 @@
-from typing import Annotated, Union
+from typing import Annotated, Union, AsyncGenerator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi import HTTPException
 from fastapi import File, UploadFile, Header
 from fastapi.responses import Response
@@ -14,6 +14,9 @@ import authenticate
 import filel
 import largeModel
 import projectManager
+import websockets
+import json
+from openai import AsyncOpenAI
 
 app = FastAPI()
 
@@ -287,3 +290,58 @@ def chat_project(req: chatRequest, infiniDocToken: Annotated[str | None, Header(
     response = req.user_prompt+" received"
     mysql_connection.close()
     return {"success": True, "response": response}
+
+
+async def get_ai_response(message: str, client: AsyncOpenAI, model: str) -> AsyncGenerator[str, None]:
+    """
+    OpenAI Response
+    """
+    response = await client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a helpful assistant, skilled in explaining "
+                    "complex concepts in simple terms."
+                ),
+            },
+            {
+                "role": "user",
+                "content": message,
+            },
+        ],
+        stream=True,
+    )
+
+    all_content = ""
+    async for chunk in response:
+        content = chunk.choices[0].delta.content
+        if content:
+            all_content += content
+            yield content
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    """
+    Websocket for AI responses
+    """
+    await websocket.accept()
+    while True:
+        message = await websocket.receive_text()
+        # input format
+        # {"message":,"endpoint":,"key":,"model":}
+        message_dict = json.loads(message)
+        if message_dict["message"] == "":
+            continue
+        if message_dict["endpoint"] == "":
+            continue
+        if message_dict["model"] == "":
+            continue
+        # key is optional
+        client = AsyncOpenAI(base_url=message_dict["endpoint"],
+                             api_key=message_dict["key"])
+
+        async for text in get_ai_response(message_dict["message"], client, message_dict["model"]):
+            await websocket.send_text(text)

@@ -1,21 +1,24 @@
-from typing import Annotated, Union
+from typing import Annotated, Union, AsyncGenerator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi import HTTPException
 from fastapi import File, UploadFile, Header, BackgroundTasks
 from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from openai import OpenAI
+from openai import OpenAI, AsyncOpenAI
 
 import chromadb
 import chromadb.utils.embedding_functions as embedding_functions
 
 from pypdf import PdfReader
 
+
 import keys
 
 client = chromadb.PersistentClient(path="./userdata/db")
+
+openai_clients = {}
 
 app = FastAPI()
 

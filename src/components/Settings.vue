@@ -33,7 +33,18 @@
                 ><el-button type="primary" @click="updateModels"
                     >更新模型</el-button
                 ><br />
-                <el-button type="primary" @click="submitForm">保存</el-button>
+                <el-button type="primary" @click="submitForm">保存</el-button
+                ><br />
+                测试对话
+                <br />
+                <el-input
+                    v-model="userInput"
+                    style="width: 240px"
+                    placeholder="Please input"
+                />
+                <el-button type="primary" @click="sendMessage">发送</el-button>
+
+                <div class="ai-response">{{ aiResponse }}</div>
             </div>
         </div>
     </div>
@@ -49,10 +60,32 @@ const endpoint = ref("");
 const key = ref("");
 const model = ref("");
 
+const userInput = ref("");
+const aiResponse = ref("");
+
 const models = ref([]);
 
 const resetModels = () => {
     models.value = [];
+};
+
+const sendMessage = () => {
+    //ws local.tmysam.top:8005
+    aiResponse.value = "";
+    let ws = new WebSocket("wss://local.tmysam.top:8001/ws");
+    ws.onopen = function () {
+        ws.send(
+            JSON.stringify({
+                endpoint: endpoint.value,
+                key: key.value,
+                model: model.value,
+                message: userInput.value,
+            })
+        );
+    };
+    ws.onmessage = function (evt) {
+        aiResponse.value += evt.data;
+    };
 };
 
 const getUniqueID = () => {

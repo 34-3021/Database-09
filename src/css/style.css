@@ -236,3 +236,6 @@ body {
     text-align: center;
     margin: 0 0 10px 0;
 }
+.ai-response {
+    background-color: rgba(127, 127, 127, 0.1);
+}
