@@ -23,13 +23,16 @@
             ><br />
             <el-button @click="goToRegister" class="full-width-button"
                 >注册</el-button
-            ><br />
-            或<br />
+            >
+            <p class="form-suggestion">或</p>
             <el-button
                 @click="loginWithTAuth"
                 class="full-width-button"
                 v-loading="tauthButtonBusy"
                 >使用 TAuth 登录</el-button
+            ><br />
+            <el-button @click="" class="full-width-button" v-loading="false"
+                >使用 GitHub 登录</el-button
             ><br />
             <el-button type="info" @click="goHome" class="full-width-button"
                 >返回</el-button

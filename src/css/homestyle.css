@@ -73,6 +73,7 @@
     padding: 15px 15px;
     margin: 0 10px;
     border: 2px solid transparent;
+    border-radius: 10px;
     display: flex;
     transition: border 0.3s;
 }
@@ -100,20 +101,24 @@
     flex: 1;
 }
 .project-name-input {
-    display: inline-block;
-    margin: 5px 0px 5px 60px;
-    width: 200px;
+    box-sizing: border-box;
+    width: 100%;
 }
 .project-edit-status {
     display: inline-block;
+    padding: 5px 60px 5px 60px;
+    color: var(--text-color);
+}
+.edited-warn {
+    color: #ffc21b;
 }
 .new-project-button {
     margin: 0 1em;
 }
 
 .chatbox {
-    height: 300px;
-    overflow-y: auto;
+    height: 250px;
+
     /* up border */
     border-top: 2px solid #ccc;
     display: flex;
@@ -122,8 +127,11 @@
 
 .dialogs {
     flex: 1;
+    overflow-y: auto;
 }
 .chat-input {
+    display: fixed;
+    bottom: 0;
     height: 35px;
 }
 .user-input-prompt {

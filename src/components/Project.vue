@@ -1,6 +1,7 @@
 <template>
     <div class="project" v-loading="loading" @keyup.ctrl.s="saveProject">
         <div class="project-edit-status">
+            项目名称<br />
             <el-input
                 v-model="projectData.project_name"
                 @change="renameProject"
@@ -8,6 +9,8 @@
                 v-loading="new_name_loading"
                 class="project-name-input"
             ></el-input>
+        </div>
+        <div class="project-edit-status" :class="{ 'edited-warn': edited }">
             {{ edited ? "*未保存" : "" }}
         </div>
         <div class="paragraphs">
@@ -45,7 +48,7 @@
                     v-loading="userInputLoading"
                 >
                     <el-input
-                        placeholder="输入聊天内容"
+                        placeholder="输入你的要求"
                         v-model="userInput"
                         class="user-input-prompt"
                     ></el-input>

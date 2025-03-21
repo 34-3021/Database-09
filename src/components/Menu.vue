@@ -2,15 +2,21 @@
     <div>
         <div id="menu-title">菜单</div>
         <div id="menu-selections">
-            <div class="menu-selection" @click="switchPage('Papers')">
-                论文库
-            </div>
-            <div class="menu-selection" @click="switchPage('Chat')">写作</div>
+            <div id="menu-selections-top">
+                <div class="menu-selection" @click="switchPage('Papers')">
+                    论文库
+                </div>
+                <div class="menu-selection" @click="switchPage('Chat')">
+                    写作
+                </div>
 
-            <div class="menu-selection" @click="switchPage('Settings')">
-                设置
+                <div class="menu-selection" @click="switchPage('Settings')">
+                    设置
+                </div>
             </div>
-            <div class="menu-selection" @click="logout">退出登录</div>
+            <div id="menu-selections-bottom">
+                <div class="menu-selection" @click="logout">退出登录</div>
+            </div>
         </div>
     </div>
 </template>

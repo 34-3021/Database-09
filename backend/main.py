@@ -70,6 +70,16 @@ class chatRequest(BaseModel):
     user_prompt: str
 
 
+def gen_mysql_connection_and_validate_token(token: str) -> mysql.connector.MySQLConnection:
+    mysql_connection = mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
+    success = authenticate.verifyLoginStatus(mysql_connection, token)
+    if not success:
+        mysql_connection.close()
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return mysql_connection
+
+
 @app.get("/")
 def read_root():
     raise HTTPException(
@@ -136,12 +146,7 @@ def login(account: NativeAccount):
 
 @app.post("/upload")
 async def upload_file(file: UploadFile, infiniDocToken: Annotated[str | None, Header()] = None):
-    mysql_connection = mysql.connector.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
-    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
-    if not success:
-        mysql_connection.close()
-        raise HTTPException(status_code=401, detail="Invalid token")
+    mysql_connection = gen_mysql_connection_and_validate_token(infiniDocToken)
 
     result = await filel.processUpload(mysql_connection, infiniDocToken, file)
     mysql_connection.close()
@@ -152,12 +157,7 @@ async def upload_file(file: UploadFile, infiniDocToken: Annotated[str | None, He
 
 @app.get("/fileList")
 def file_list(infiniDocToken: Annotated[str | None, Header()] = None, limit: int = 10, offset: int = 0):
-    mysql_connection = mysql.connector.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
-    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
-    if not success:
-        mysql_connection.close()
-        raise HTTPException(status_code=401, detail="Invalid token")
+    mysql_connection = gen_mysql_connection_and_validate_token(infiniDocToken)
 
     files, totalfiles = filel.getUserFileList(
         mysql_connection, infiniDocToken, limit, offset)
@@ -168,12 +168,7 @@ def file_list(infiniDocToken: Annotated[str | None, Header()] = None, limit: int
 
 @app.get("/download")
 def download_file(seq: int, infiniDocToken: Annotated[str | None, Header()] = None):
-    mysql_connection = mysql.connector.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
-    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
-    if not success:
-        mysql_connection.close()
-        raise HTTPException(status_code=401, detail="Invalid token")
+    mysql_connection = gen_mysql_connection_and_validate_token(infiniDocToken)
 
     file, filename = filel.getFile(mysql_connection, infiniDocToken, seq)
     mysql_connection.close()
@@ -183,12 +178,7 @@ def download_file(seq: int, infiniDocToken: Annotated[str | None, Header()] = No
 
 @app.get("/delete")
 def delete_file(seq: int, infiniDocToken: Annotated[str | None, Header()] = None):
-    mysql_connection = mysql.connector.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
-    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
-    if not success:
-        mysql_connection.close()
-        raise HTTPException(status_code=401, detail="Invalid token")
+    mysql_connection = gen_mysql_connection_and_validate_token(infiniDocToken)
 
     success = filel.deleteFile(mysql_connection, infiniDocToken, seq)
     mysql_connection.close()
@@ -198,26 +188,16 @@ def delete_file(seq: int, infiniDocToken: Annotated[str | None, Header()] = None
 
 @app.get("/user/settings")
 def get_user_settings(infiniDocToken: Annotated[str | None, Header()] = None):
-    mysql_connection = mysql.connector.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
-    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
-    if not success:
-        mysql_connection.close()
-        raise HTTPException(status_code=401, detail="Invalid token")
+    mysql_connection = gen_mysql_connection_and_validate_token(infiniDocToken)
     unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
     settings = authenticate.getSettings(mysql_connection, unique_id)
     mysql_connection.close()
-    return {"success": success, "settings": settings}
+    return {"success": True, "settings": settings}
 
 
 @app.post("/user/settings/set")
 def set_user_settings(payload: Settings, infiniDocToken: Annotated[str | None, Header()] = None):
-    mysql_connection = mysql.connector.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
-    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
-    if not success:
-        mysql_connection.close()
-        raise HTTPException(status_code=401, detail="Invalid token")
+    mysql_connection = gen_mysql_connection_and_validate_token(infiniDocToken)
     unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
     success = authenticate.setSettings(
         mysql_connection, unique_id, payload.data)
@@ -227,12 +207,7 @@ def set_user_settings(payload: Settings, infiniDocToken: Annotated[str | None, H
 
 @app.get("/project/get")
 def get_projects(infiniDocToken: Annotated[str | None, Header()] = None):
-    mysql_connection = mysql.connector.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
-    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
-    if not success:
-        mysql_connection.close()
-        raise HTTPException(status_code=401, detail="Invalid token")
+    mysql_connection = gen_mysql_connection_and_validate_token(infiniDocToken)
     unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
     projects = projectManager.getProjects(mysql_connection, unique_id)
     mysql_connection.close()
@@ -241,27 +216,17 @@ def get_projects(infiniDocToken: Annotated[str | None, Header()] = None):
 
 @app.post("/project/create")
 def create_project(req: createProjectRequest, infiniDocToken: Annotated[str | None, Header()] = None):
-    mysql_connection = mysql.connector.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
-    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
-    if not success:
-        mysql_connection.close()
-        raise HTTPException(status_code=401, detail="Invalid token")
+    mysql_connection = gen_mysql_connection_and_validate_token(infiniDocToken)
     unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
     id = projectManager.createProject(
         mysql_connection, unique_id, req.project_name)
     mysql_connection.close()
-    return {"success": success, "id": id}
+    return {"success": True, "id": id}
 
 
 @app.post("/project/delete")
 def delete_project(req: deleteProjectRequest, infiniDocToken: Annotated[str | None, Header()] = None):
-    mysql_connection = mysql.connector.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
-    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
-    if not success:
-        mysql_connection.close()
-        raise HTTPException(status_code=401, detail="Invalid token")
+    mysql_connection = gen_mysql_connection_and_validate_token(infiniDocToken)
     unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
     success = projectManager.deleteProject(
         mysql_connection, unique_id, req.project_id)
@@ -271,12 +236,7 @@ def delete_project(req: deleteProjectRequest, infiniDocToken: Annotated[str | No
 
 @app.post("/project/rename/{project_id}")
 def rename_project(project_id: int, req: renameProjectRequest, infiniDocToken: Annotated[str | None, Header()] = None):
-    mysql_connection = mysql.connector.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
-    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
-    if not success:
-        mysql_connection.close()
-        raise HTTPException(status_code=401, detail="Invalid token")
+    mysql_connection = gen_mysql_connection_and_validate_token(infiniDocToken)
     unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
     success = projectManager.renameProject(
         mysql_connection, unique_id, project_id, req.new_name)
@@ -286,12 +246,7 @@ def rename_project(project_id: int, req: renameProjectRequest, infiniDocToken: A
 
 @app.get("/project/getparagraphs/{project_id}")
 def get_paragraphs(project_id: int, infiniDocToken: Annotated[str | None, Header()] = None):
-    mysql_connection = mysql.connector.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
-    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
-    if not success:
-        mysql_connection.close()
-        raise HTTPException(status_code=401, detail="Invalid token")
+    mysql_connection = gen_mysql_connection_and_validate_token(infiniDocToken)
     unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
     paragraphs = projectManager.getParagraphs(
         mysql_connection, unique_id, project_id)
@@ -301,12 +256,7 @@ def get_paragraphs(project_id: int, infiniDocToken: Annotated[str | None, Header
 
 @app.get("/project/name/{project_id}")
 def get_project_name(project_id: int, infiniDocToken: Annotated[str | None, Header()] = None):
-    mysql_connection = mysql.connector.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
-    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
-    if not success:
-        mysql_connection.close()
-        raise HTTPException(status_code=401, detail="Invalid token")
+    mysql_connection = gen_mysql_connection_and_validate_token(infiniDocToken)
     unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
     project_name = projectManager.getProjectName(
         mysql_connection, unique_id, project_id)
@@ -316,12 +266,7 @@ def get_project_name(project_id: int, infiniDocToken: Annotated[str | None, Head
 
 @app.post("/project/save/{project_id}")
 def save_project(project_id: int, req: saveProjectRequest, infiniDocToken: Annotated[str | None, Header()] = None):
-    mysql_connection = mysql.connector.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
-    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
-    if not success:
-        mysql_connection.close()
-        raise HTTPException(status_code=401, detail="Invalid token")
+    mysql_connection = gen_mysql_connection_and_validate_token(infiniDocToken)
     unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
     success = projectManager.saveProject(
         mysql_connection, unique_id, project_id, req.paragraphs)
@@ -337,14 +282,8 @@ def get_models(request: getModelsRequest):
 
 @app.post("/project/chat")
 def chat_project(req: chatRequest, infiniDocToken: Annotated[str | None, Header()] = None):
-    mysql_connection = mysql.connector.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
-    success = authenticate.verifyLoginStatus(mysql_connection, infiniDocToken)
-    if not success:
-        mysql_connection.close()
-        raise HTTPException(status_code=401, detail="Invalid token")
-    unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
+    mysql_connection = gen_mysql_connection_and_validate_token(infiniDocToken)
     # todo implement chat
     response = req.user_prompt+" received"
     mysql_connection.close()
-    return {"success": success, "response": response}
+    return {"success": True, "response": response}

@@ -30,7 +30,7 @@
                             friendlySize(scope.row.size)
                         }}</template>
                     </el-table-column>
-                    <el-table-column prop="operation" label="Operation">
+                    <el-table-column prop="operation" label="操作">
                         <template #default="scope">
                             <el-button
                                 type="primary"
