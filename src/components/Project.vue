@@ -29,7 +29,17 @@
                 @movedown="movedown(index)"
                 @delete="deleteParagraph(index)"
             ></Paragraph>
+            <div
+                class="content cent3r"
+                v-if="
+                    !projectData.paragraphs ||
+                    projectData.paragraphs.length === 0
+                "
+            >
+                【点击 + 以开始】
+            </div>
         </div>
+
         <div
             class="chatbox"
             v-if="projectData.paragraphs && projectData.paragraphs.length > 0"
@@ -40,11 +50,13 @@
                         .chatHistory"
                     :role="chat.role"
                     :content="chat.content"
+                    :time="chat.time"
                 ></Dialog>
             </div>
             <div class="chat-input">
                 <form
                     @submit.prevent="sendMessage"
+                    class="input-form"
                     v-loading="userInputLoading"
                 >
                     <el-input
@@ -90,6 +102,7 @@ const sendMessage = async () => {
     projectData.value.paragraphs[selectedParagraph.value].chatHistory.push({
         role: "User",
         content: userInput.value,
+        time: Date.now(),
     });
     // /project/chat {project_name,paragraph_title,paragraph_current_content,user_prompt}
 
@@ -122,6 +135,7 @@ const sendMessage = async () => {
     projectData.value.paragraphs[selectedParagraph.value].chatHistory.push({
         role: "AI",
         content: data.response,
+        time: Date.now(),
     });
 };
 
@@ -241,7 +255,11 @@ const loadProject = async () => {
     }
 };
 
+const saving = ref(false);
+
 const saveProject = async () => {
+    if (saving.value) return;
+    saving.value = true;
     let notification_instance = ElNotification({
         title: "保存中",
         message: "正在保存项目",
@@ -276,9 +294,11 @@ const saveProject = async () => {
     }
     notification_instance.close();
     edited.value = false;
+    saving.value = false;
 };
 
 const keydownHandler = (e) => {
+    if (e.repeat) return;
     if (e.ctrlKey && e.key === "s") {
         e.preventDefault();
         saveProject();
@@ -290,6 +310,12 @@ const unloadHandler = (e) => {
         e.preventDefault();
     }
 };
+
+const useParagraph = (content) => {
+    projectData.value.paragraphs[selectedParagraph.value].content = content;
+};
+
+provide("useParagraph", (content) => useParagraph(content));
 
 onMounted(() => {
     loadProject();

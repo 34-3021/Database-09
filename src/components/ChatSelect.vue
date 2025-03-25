@@ -17,7 +17,9 @@
                 @confirm="deleteProject(pj.project_id)"
             >
                 <template #reference>
-                    <el-button type="danger">删除</el-button></template
+                    <el-button type="danger" class="iconfont" circle
+                        >&#xe665;</el-button
+                    ></template
                 >
             </el-popconfirm>
         </div>

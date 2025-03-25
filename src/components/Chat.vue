@@ -44,6 +44,10 @@ const selector = ref(null);
 
 const pj = ref(null);
 
+const ok_to_switch = () => {
+    return !pj.value || !pj.value.edited;
+};
+
 provide("selectProject", (project_id) => selectProject(project_id));
 
 const reloadProjects = async () => {
@@ -51,6 +55,15 @@ const reloadProjects = async () => {
 };
 
 provide("reloadProjects", reloadProjects);
+
+const saveProject = () => {
+    pj.value.saveProject();
+};
+
+defineExpose({
+    saveProject,
+    ok_to_switch,
+});
 
 const forceSelectProject = () => {
     project_id.value = target_project_id.value;

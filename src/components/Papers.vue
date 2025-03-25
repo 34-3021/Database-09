@@ -9,8 +9,9 @@
                         class="upload-demo"
                         action="https://local.tmysam.top:8001/upload"
                         :headers="headers"
-                        multiple="true"
+                        :multiple="true"
                         :auto-upload="false"
+                        :on-success="refreshDefault"
                         ><template #trigger>
                             <el-button type="primary">选择文件以上传</el-button>
                         </template>
@@ -19,7 +20,7 @@
                             type="success"
                             @click="submitUpload"
                         >
-                            上传到服务器
+                            全部上传
                         </el-button>
                     </el-upload>
                 </div>
@@ -43,6 +44,7 @@
                                 type="danger"
                                 size="mini"
                                 @click="deleteFile(scope.row.seq)"
+                                :disabled="scope.row.deleting !== undefined"
                             >
                                 删除
                             </el-button>
@@ -60,6 +62,7 @@
     </div>
 </template>
 <script setup>
+import { ta } from "element-plus/es/locales.mjs";
 import HeadBar from "./headBar.vue";
 import { inject, onMounted, ref, watch } from "vue";
 
@@ -90,6 +93,10 @@ const friendlySize = (bytes) => {
     if (bytes < 1024 * 1024 * 1024)
         return (bytes / 1024 / 1024).toFixed(2) + "MB";
     return (bytes / 1024 / 1024 / 1024).toFixed(2) + "GB";
+};
+
+const refreshDefault = () => {
+    fetchPage(1);
 };
 
 const fetchPage = async (pageNo) => {
@@ -130,6 +137,7 @@ const downloadFile = async (seq) => {
 };
 
 const deleteFile = async (seq) => {
+    tableData.value.find((item) => item.seq === seq).deleting = true;
     // https://local.tmysam.top:8001/delete?seq=seq
     // headers: {infiniDocToken: token}
     let res = await fetch(`https://local.tmysam.top:8001/delete?seq=${seq}`, {
@@ -141,6 +149,7 @@ const deleteFile = async (seq) => {
     let data = await res.json();
     if (data.success) {
         fetchPage(1);
+        tableData.value.find((item) => item.seq === seq).deleting = undefined;
     }
 };
 

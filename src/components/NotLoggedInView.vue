@@ -22,15 +22,19 @@
                 <div class="feature">
                     <div class="feature-title">论文导入方式</div>
                     <div class="feature-description">
-                        使用 arXiv 下载的 LaTeX 源代码<span class="sup"
-                            >[3]</span
-                        >，也支持文本文件导入<span class="sup">[4]</span>。
+                        支持 PDF 导入<span class="sup">[3]</span>。
                     </div>
                 </div>
                 <div class="feature">
                     <div class="feature-title">自动的引用联想</div>
                     <div class="feature-description">
                         当您提出要求时，如果相关文本涉及引用到的文献，且该文献已加入论文库，大模型将考虑被引用文献的内容。
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature-title">流式生成</div>
+                    <div class="feature-description">
+                        将实时生成的文本流式传输到您的设备。
                     </div>
                 </div>
             </div>
@@ -54,10 +58,6 @@
                         员工负责。arXiv 的管理由领导团队领导，并受到 arXiv
                         编辑顾问委员会、机构顾问委员会和科学顾问委员会的指导。arXiv
                         是一个社区支持的资源，由康奈尔大学、西蒙斯基金会、成员机构和捐助者资助。
-                    </div>
-                    <div>
-                        [4]
-                        当使用文件直接导入时，论文的标题和作者等信息将由系统自动识别，但是我们无法保证识别的准确性。
                     </div>
                 </div>
             </div>

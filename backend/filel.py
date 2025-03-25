@@ -142,9 +142,24 @@ def deleteFile(mysql_connection: mysql_connection.MySQLConnection, token: str, s
 
     mysql_cursor = mysql_connection.cursor()
 
+    # get sha256 from database
+    mysql_cursor.execute(
+        "SELECT `fileid` FROM `user_files` WHERE `UNIQUE_ID`=%s AND `seq`=%s;", (unique_id, seq))
+    file = mysql_cursor.fetchone()
+    if file == None:
+        return False
+    mysql_cursor.execute(
+        "SELECT `sha256` FROM `files` WHERE `id`=%s;", (file[0],))
+    filed = mysql_cursor.fetchone()
+    if filed == None:
+        return False
+
     mysql_cursor.execute(
         "DELETE FROM `user_files` WHERE `UNIQUE_ID`=%s AND `seq`=%s;", (unique_id, seq))
     mysql_connection.commit()
     mysql_cursor.close()
+
+    requests.post("http://localhost:8005/delete", json={
+        "filename": filed[0], "unique_id": unique_id})
 
     return True

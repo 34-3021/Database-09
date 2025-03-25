@@ -98,7 +98,9 @@ def processfile(fname: str, filename: str, unique_id: str):
 
     for i in range(0, len(sentence_groups), 10):
         collection.add(documents=sentence_groups[i:i+10],
-                       ids=sentence_groups_ids[i:i+10])
+                       ids=sentence_groups_ids[i:i+10],
+                       metadatas=metadatas[i:i+10]
+                       )
 
     with open("./log.txt", "w", encoding="utf-8") as f:
         for sentence_chunk in sentence_groups:
@@ -208,4 +210,4 @@ async def delete(request: ProcessRequest):
         name=request.unique_id, embedding_function=embedding_f)
     if collection is None:
         raise HTTPException(status_code=404, detail="Collection not found")
-    return
+    collection.delete(where={"filename": request.filename})

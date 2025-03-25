@@ -3,7 +3,9 @@
         <div class="main-main">
             <HeadBar>InfiniDoc 设置</HeadBar>
             <div class="content">
-                你的 InfiniDoc Unique ID: {{ uniqueid }}<br />
+                <h2>账户信息</h2>
+                InfiniDoc Unique ID: {{ uniqueid }}<br />
+                <h2>LLM 设置</h2>
                 自定义大模型 Endpoint<br />
                 <el-input
                     v-model="endpoint"

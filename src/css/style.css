@@ -1,11 +1,14 @@
 @font-face {
     font-family: "iconfont"; /* Project id 4846178 */
-    src: url("//at.alicdn.com/t/c/font_4846178_l93d79h847.woff2?t=1741155037343")
+    src: url("//at.alicdn.com/t/c/font_4846178_1yic8xtdt4o.woff2?t=1742889937800")
             format("woff2"),
-        url("//at.alicdn.com/t/c/font_4846178_l93d79h847.woff?t=1741155037343")
+        url("//at.alicdn.com/t/c/font_4846178_1yic8xtdt4o.woff?t=1742889937800")
             format("woff"),
-        url("//at.alicdn.com/t/c/font_4846178_l93d79h847.ttf?t=1741155037343")
+        url("//at.alicdn.com/t/c/font_4846178_1yic8xtdt4o.ttf?t=1742889937800")
             format("truetype");
+}
+.iconfont {
+    font-family: "iconfont" !important;
 }
 .fade-enter-from,
 .fade-leave-to {
@@ -59,6 +62,7 @@ html.dark-mode {
     --el-fill-color-lighter: #333;
     --el-fill-color-light: #555;
     --el-bg-color-overlay: #000;
+    --el-text-color-primary: #fff;
 }
 body {
     margin: 0;
@@ -112,6 +116,7 @@ body {
     cursor: pointer;
     transition: background-color 0.3s;
     display: flex;
+    font-family: "iconfont", Arial, sans-serif;
 }
 .menu-selection:hover {
     background-color: rgba(255, 255, 255, 0.2);
@@ -238,4 +243,7 @@ body {
 }
 .ai-response {
     background-color: rgba(127, 127, 127, 0.1);
+}
+.chatdate {
+    font-weight: 400;
 }

@@ -37,6 +37,7 @@
 .main-left {
     width: 200px;
     height: 100vh;
+    overflow-x: auto;
 }
 .main-main {
     flex: 1;
@@ -130,10 +131,17 @@
     overflow-y: auto;
 }
 .chat-input {
-    display: fixed;
-    bottom: 0;
     height: 35px;
+    padding: 0 20px 0 20px;
 }
 .user-input-prompt {
+    flex: 1;
     width: 500px;
+}
+
+.input-form {
+    display: flex;
+}
+.cent3r {
+    text-align: center;
 }

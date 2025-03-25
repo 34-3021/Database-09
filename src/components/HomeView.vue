@@ -1,9 +1,9 @@
 <template>
     <div id="home-view">
-        <Menu id="menu"></Menu>
+        <Menu id="menu" :curPage="currentPage"></Menu>
 
         <transition name="fade-anl" mode="out-in"
-            ><component :is="curcomponent"></component
+            ><component :is="curcomponent" ref="copn"></component
         ></transition>
     </div>
 </template>
@@ -15,6 +15,8 @@ import Settings from "./Settings.vue";
 import Papers from "./Papers.vue";
 
 const menuOn = ref(false);
+
+const copn = ref(null);
 
 const curcomponent = shallowRef(null);
 
@@ -29,6 +31,7 @@ const toggleMenu = () => {
     }
 };
 provide("toggleMenu", toggleMenu);
+provide("Projects", copn);
 const toggleDarkModeParent = inject("toggleDarkMode");
 const currentPage = ref("");
 const switchPage = (page) => {

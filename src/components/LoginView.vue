@@ -20,11 +20,12 @@
                 @click="handleLogin"
                 class="full-width-button"
                 >确认</el-button
-            ><br />
+            >
+
+            <p class="form-suggestion">或</p>
             <el-button @click="goToRegister" class="full-width-button"
                 >注册</el-button
-            >
-            <p class="form-suggestion">或</p>
+            ><br />
             <el-button
                 @click="loginWithTAuth"
                 class="full-width-button"
