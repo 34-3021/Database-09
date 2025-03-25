@@ -51,10 +51,12 @@ module.exports = {
         hot: true,
         server: {
             type: "https",
-            options: {
-                key: fs.readFileSync("./cert/local.tmysam.top-key.pem"),
-                cert: fs.readFileSync("./cert/local.tmysam.top.pem"),
-            },
+            options: fs.existsSync("./cert/local.tmysam.top-key.pem")
+                ? {
+                      key: fs.readFileSync("./cert/local.tmysam.top-key.pem"),
+                      cert: fs.readFileSync("./cert/local.tmysam.top.pem"),
+                  }
+                : {},
         },
     },
 };
