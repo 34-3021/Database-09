@@ -24,6 +24,19 @@
                         </el-button>
                     </el-upload>
                 </div>
+                <div>
+                    <el-input
+                        placeholder="请输入搜索内容"
+                        class="search-input"
+                        suffix-icon="el-icon-search"
+                        size="small"
+                        clearable
+                        v-model="searchKey"
+                    ></el-input>
+                    <el-button type="primary" size="small" @click="search"
+                        >搜索</el-button
+                    >
+                </div>
                 <el-table :data="tableData" stripe style="width: 100%">
                     <el-table-column prop="name" label="文件名" width="180" />
                     <el-table-column prop="size" label="大小" width="180">
@@ -76,6 +89,24 @@ const uploadRef = ref();
 
 const totalPages = ref(1);
 
+const searchKey = ref("");
+const search = async () => {
+    if (searchKey.value === "") {
+        return;
+    }
+    let key = encodeURIComponent(searchKey.value);
+    let res = await fetch(
+        `https://local.tmysam.top:8001/search?keyword=${key}`,
+        {
+            method: "GET",
+            headers: {
+                infiniDocToken: loginState.value.token,
+            },
+        }
+    );
+    let data = await res.json();
+    console.log(data);
+};
 const submitUpload = () => {
     uploadRef.value.submit();
 };

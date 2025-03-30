@@ -82,6 +82,7 @@ const sendMessage = () => {
                 key: key.value,
                 model: model.value,
                 message: userInput.value,
+                type: "test",
             })
         );
     };

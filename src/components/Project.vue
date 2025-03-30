@@ -97,7 +97,7 @@ const userInputLoading = ref(false);
 const edited = ref(false);
 
 const sendMessage = async () => {
-    userInputLoading.value = true;
+    //userInputLoading.value = true;
     if (userInput.value.trim() === "") return;
     projectData.value.paragraphs[selectedParagraph.value].chatHistory.push({
         role: "User",
@@ -106,38 +106,122 @@ const sendMessage = async () => {
     });
     // /project/chat {project_name,paragraph_title,paragraph_current_content,user_prompt}
 
-    let res = await fetch("https://local.tmysam.top:8001/project/chat", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            infiniDocToken: loginState.value.token,
-        },
-        body: JSON.stringify({
-            project_name: projectData.value.project_name,
-            paragraph_title:
-                projectData.value.paragraphs[selectedParagraph.value].title,
-            paragraph_current_content:
-                projectData.value.paragraphs[selectedParagraph.value].content,
-            user_prompt: userInput.value,
-        }),
-    });
-    let data = await res.json();
-    userInputLoading.value = false;
-    if (!data.success) {
-        ElNotification({
-            title: "错误",
-            message: data.message,
-            type: "error",
-        });
-        return;
-    }
-    userInput.value = "";
-    projectData.value.paragraphs[selectedParagraph.value].chatHistory.push({
-        role: "AI",
-        content: data.response,
-        time: Date.now(),
-    });
+    // let res = await fetch("https://local.tmysam.top:8001/project/chat", {
+    //     method: "POST",
+    //     headers: {
+    //         "Content-Type": "application/json",
+    //         infiniDocToken: loginState.value.token,
+    //     },
+    //     body: JSON.stringify({
+    //         project_name: projectData.value.project_name,
+    //         paragraph_title:
+    //             projectData.value.paragraphs[selectedParagraph.value].title,
+    //         paragraph_current_content:
+    //             projectData.value.paragraphs[selectedParagraph.value].content,
+    //         user_prompt: userInput.value,
+    //     }),
+    // });
+    // let data = await res.json();
+    // userInputLoading.value = false;
+    // if (!data.success) {
+    //     ElNotification({
+    //         title: "错误",
+    //         message: data.message,
+    //         type: "error",
+    //     });
+    //     return;
+    // }
+    // userInput.value = "";
+    // projectData.value.paragraphs[selectedParagraph.value].chatHistory.push({
+    //     role: "AI",
+    //     content: data.response,
+    //     time: Date.now(),
+    // });
+    let ws = new WebSocket("wss://local.tmysam.top:8001/ws");
+    ws.onopen = function () {
+        ws.send(
+            JSON.stringify({
+                project_name: projectData.value.project_name,
+                paragraph_title:
+                    projectData.value.paragraphs[selectedParagraph.value].title,
+                paragraph_current_content:
+                    projectData.value.paragraphs[selectedParagraph.value]
+                        .content,
+                user_prompt: userInput.value,
+                token: loginState.value.token,
+                type: "project",
+            })
+        );
+    };
+    // let dat = {
+    //     role: "AI",
+    //     content: "",
+    //     time: Date.now(),
+    // };
+    // projectData.value.paragraphs[selectedParagraph.value].chatHistory.push(dat);
+    ws.onmessage = function (evt) {
+        /**
+         * yield "--SYSTEM--"
+    yield msg[0]["content"]
+    yield "--DONE--"
+    yield "--AI--"
+    yield response
+    yield "--DONE--"
+    yield "--SYSTEM--"
+         */
+        if (evt.data == "--DDONE--") {
+            ws.close();
+            return;
+        }
+        if (evt.data == "--DONE--") {
+            return;
+        }
+        if (evt.data == "--AI PROG--") {
+            projectData.value.paragraphs[
+                selectedParagraph.value
+            ].chatHistory.push({
+                role: "AI In Progress",
+                content: "",
+                time: Date.now(),
+            });
+            return;
+        }
+        if (evt.data == "--AI--") {
+            projectData.value.paragraphs[
+                selectedParagraph.value
+            ].chatHistory.push({
+                role: "AI",
+                content: "",
+                time: Date.now(),
+            });
+            return;
+        }
+        if (evt.data == "--SYSTEM--") {
+            projectData.value.paragraphs[
+                selectedParagraph.value
+            ].chatHistory.push({
+                role: "System",
+                content: "",
+                time: Date.now(),
+            });
+            return;
+        }
+
+        projectData.value.paragraphs[selectedParagraph.value].chatHistory[
+            projectData.value.paragraphs[selectedParagraph.value].chatHistory
+                .length - 1
+        ].content += evt.data;
+    };
 };
+
+const deleteMessage = (index) => {
+    projectData.value.paragraphs[selectedParagraph.value].chatHistory.splice(
+        index,
+        1
+    );
+};
+
+provide("deleteMessage", (index) => deleteMessage(index));
 
 const moveup = (index) => {
     if (index === 0) return;

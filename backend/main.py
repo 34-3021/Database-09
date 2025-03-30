@@ -16,7 +16,8 @@ import largeModel
 import projectManager
 import websockets
 import json
-from openai import AsyncOpenAI
+import requests
+from openai import AsyncOpenAI, OpenAI
 
 app = FastAPI()
 
@@ -189,6 +190,30 @@ def delete_file(seq: int, infiniDocToken: Annotated[str | None, Header()] = None
     return {"success": success}
 
 
+@app.get("/search")
+def search_in_files(keyword: str, infiniDocToken: Annotated[str | None, Header()] = None):
+    mysql_connection = gen_mysql_connection_and_validate_token(infiniDocToken)
+    unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
+
+    resp = requests.post("http://localhost:8005/query", json={
+        "query_text": keyword, "unique_id": unique_id})
+    if resp.status_code != 200:
+        raise HTTPException(status_code=resp.status_code,
+                            detail="Error in query")
+    result: dict = resp.json()
+    keys = result.keys()
+    fname_sha256 = filel.getFileNames(
+        mysql_connection, unique_id, keys)
+    dic = {}
+    for i in range(len(fname_sha256)):
+        dic[fname_sha256[i][1]] = fname_sha256[i][0]
+    res = {}
+    for i in keys:
+        res[dic[i]] = result[i]
+    mysql_connection.close()
+    return {"result": res}
+
+
 @app.get("/user/settings")
 def get_user_settings(infiniDocToken: Annotated[str | None, Header()] = None):
     mysql_connection = gen_mysql_connection_and_validate_token(infiniDocToken)
@@ -283,19 +308,76 @@ def get_models(request: getModelsRequest):
     return models
 
 
-@app.post("/project/chat")
-def chat_project(req: chatRequest, infiniDocToken: Annotated[str | None, Header()] = None):
+async def chat_project(req: chatRequest,  infiniDocToken: str):
     mysql_connection = gen_mysql_connection_and_validate_token(infiniDocToken)
     # todo implement chat
-    response = req.user_prompt+" received"
-    mysql_connection.close()
-    return {"success": True, "response": response}
+    # response = req.user_prompt+" received"
+    unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
+    settings = authenticate.getSettings(mysql_connection, unique_id)
+    if settings["endpoint"] == "":
+        raise HTTPException(status_code=400, detail="Endpoint not set")
+    if settings["model"] == "":
+        raise HTTPException(status_code=400, detail="Model not set")
+    client = OpenAI(
+        api_key=settings["key"],
+        base_url=settings["endpoint"]
+    ) if settings["key"] != "" else OpenAI(
+        base_url=settings["endpoint"]
+    )
+    msg, response = largeModel.get_ai_response_primary(
+        req.project_name, req.paragraph_title, req.paragraph_current_content, req.user_prompt, client, settings[
+            "model"]
+    )
+    yield "--SYSTEM--"
+    yield msg[0]["content"]
+    yield "--DONE--"
+    yield "--AI PROG--"
+    yield response
+    yield "--DONE--"
+    yield "--SYSTEM--"
+    kwds = [s.strip() for s in response]
+    additional_info_s = ""
+    if kwds[0] != "No":
+        resp = requests.post("http://localhost:8005/querymultiple", json={
+            "query_texts": kwds, "unique_id": unique_id})
+        if resp.status_code != 200:
+            raise HTTPException(status_code=resp.status_code,
+                                detail="Error in query")
+        result: dict = resp.json()
+        keys = result.keys()
+        fname_sha256 = filel.getFileNames(
+            mysql_connection, unique_id, keys)
+        dic = {}
+        for i in range(len(fname_sha256)):
+            dic[fname_sha256[i][1]] = fname_sha256[i][0]
+        res = {}
+        for i in keys:
+            res[dic[i]] = result[i]
+        for i in res.keys():
+            additional_info_s += "In document " + i + ":\n"
+            for j in res[i].keys():
+                additional_info_s += "In " + j + ":\n" + res[i][j] + "\n"
+        additional_info_s += "\n"
+    client2 = AsyncOpenAI(
+        api_key=settings["key"],
+        base_url=settings["endpoint"]
+    ) if settings["key"] != "" else AsyncOpenAI(
+        base_url=settings["endpoint"]
+    )
+    yield additional_info_s
+    yield "--DONE--"
+    yield "--AI--"
+    # get_ai_response_secondary is async function
+    async for text in largeModel.get_ai_response_secondary(
+            additional_info_s, msg, client2, settings["model"]):
+        yield text
+    yield "--DONE--"
+    yield "--DDONE--"
+
+    # return {"success": True, "response": response, "msg_history": msg}
 
 
 async def get_ai_response(message: str, client: AsyncOpenAI, model: str) -> AsyncGenerator[str, None]:
-    """
-    OpenAI Response
-    """
     response = await client.chat.completions.create(
         model=model,
         messages=[
@@ -333,15 +415,25 @@ async def websocket_endpoint(websocket: WebSocket):
         # input format
         # {"message":,"endpoint":,"key":,"model":}
         message_dict = json.loads(message)
-        if message_dict["message"] == "":
-            continue
-        if message_dict["endpoint"] == "":
-            continue
-        if message_dict["model"] == "":
-            continue
         # key is optional
-        client = AsyncOpenAI(base_url=message_dict["endpoint"],
-                             api_key=message_dict["key"])
+        if message_dict["type"] == "test":
+            if message_dict["message"] == "":
+                continue
+            if message_dict["endpoint"] == "":
+                continue
+            if message_dict["model"] == "":
+                continue
+            client = AsyncOpenAI(base_url=message_dict["endpoint"],
+                                 api_key=message_dict["key"])
 
-        async for text in get_ai_response(message_dict["message"], client, message_dict["model"]):
-            await websocket.send_text(text)
+            async for text in get_ai_response(message_dict["message"], client, message_dict["model"]):
+                await websocket.send_text(text)
+        elif message_dict["type"] == "project":
+            req = chatRequest(
+                project_name=message_dict["project_name"],
+                paragraph_title=message_dict["paragraph_title"],
+                paragraph_current_content=message_dict["paragraph_current_content"],
+                user_prompt=message_dict["user_prompt"]
+            )
+            async for text in chat_project(req, message_dict["token"]):
+                await websocket.send_text(text)

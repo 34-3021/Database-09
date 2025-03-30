@@ -49,6 +49,11 @@ class QueryRequest(BaseModel):
     query_text: str
 
 
+class QueryMultiRequest(BaseModel):
+    unique_id: str
+    query_texts: list[str]
+
+
 class UniqueId(BaseModel):
     unique_id: str
 
@@ -157,6 +162,72 @@ async def query(request: QueryRequest):
         chunkend = chunk+3
         for i in range(chunkbegin, chunkend):
             query_passages[idx].append(str(i))
+
+    resultx = {}
+
+    for key in query_passages:
+        # remove duplicates
+        query_passages[key] = list(set(query_passages[key]))
+        resultx[key] = collection.get(
+            ids=[key+"_"+chk for chk in query_passages[key]])
+
+    # get all the sentences
+
+    final_result = {}
+
+    for key in resultx:
+        # Group continuous chunks and format the result
+        chunks = sorted([int(chunk.split("_")[1])
+                        for chunk in resultx[key]["ids"]])
+        grouped_chunks = []
+        current_group = [chunks[0]]
+
+        for i in range(1, len(chunks)):
+            if chunks[i] == chunks[i - 1] + 1:
+                current_group.append(chunks[i])
+            else:
+                grouped_chunks.append(current_group)
+                current_group = [chunks[i]]
+
+        grouped_chunks.append(current_group)
+
+        final_result[key] = {}
+        for group in grouped_chunks:
+            chunk_range = f"chunk {group[0]} - {group[-1]}" if len(
+                group) > 1 else f"chunk {group[0]}"
+            sentences = " ".join(resultx[key]["documents"][resultx[key]["ids"].index(
+                f"{key}_{chunk}")] for chunk in group)
+            final_result[key][chunk_range] = sentences
+        pass
+
+    return final_result
+
+
+@app.post("/querymultiple")
+async def querymultiple(request: QueryMultiRequest):
+    collection = client.get_or_create_collection(
+        name=request.unique_id, embedding_function=embedding_f)
+    if collection is None:
+        raise HTTPException(status_code=404, detail="Collection not found")
+    # Perform a search for top 10 similar sentences
+    query_texts = request.query_texts
+
+    query_passages = {}
+    for query_text in query_texts:
+        results = collection.query(query_texts=[query_text], n_results=3)
+        ids = results["ids"][0]
+
+        # format xxxxxx_k
+        for id in ids:
+            idx = id.split("_")[0]
+            # check if id exists
+            if idx not in query_passages:
+                query_passages[idx] = []
+            chunk = int(id.split("_")[1])
+            chunkbegin = max(0, chunk-2)
+            chunkend = chunk+3
+            for i in range(chunkbegin, chunkend):
+                query_passages[idx].append(str(i))
 
     resultx = {}
 

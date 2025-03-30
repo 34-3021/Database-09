@@ -130,6 +130,29 @@ def getFile(mysql_connection: mysql_connection.MySQLConnection, token: str, seq:
     return content, file[0]
 
 
+def getFileNames(mysql_connection: mysql_connection.MySQLConnection, unique_id: str, file_sha256s: list[str]):
+    '''
+    @param unique_id: The unique id of the user
+    @param file_sha256s: The sha256 of the files
+    @return: A list of file names
+    '''
+    mysql_cursor = mysql_connection.cursor()
+    # mysql_cursor.execute(
+    #     "SELECT `name` FROM `user_files` WHERE `UNIQUE_ID`=%s AND `fileid` IN (SELECT id FROM `files` WHERE sha256 IN %s);", (unique_id, tuple(file_sha256s)))
+
+    sha256_s = "("
+    for sha256 in file_sha256s:
+        sha256_s += f"'{sha256}',"
+    sha256_s = sha256_s[:-1]+")"
+
+    # SELECT `name`,`sha256` FROM `user_files` INNER JOIN `files` ON `user_files`.`fileid`=`files`.`id` WHERE `UNIQUE_ID`=%s AND `sha256` IN %s;
+    mysql_cursor.execute(
+        "SELECT `name`,`sha256` FROM `user_files` INNER JOIN `files` ON `user_files`.`fileid`=`files`.`id` WHERE `UNIQUE_ID`=%s AND `sha256` IN "+sha256_s, (unique_id, ))
+    files = mysql_cursor.fetchall()
+    mysql_cursor.close()
+    return files
+
+
 def deleteFile(mysql_connection: mysql_connection.MySQLConnection, token: str, seq: int):
     '''
     @param token: The token to be verified
