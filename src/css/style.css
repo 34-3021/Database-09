@@ -232,11 +232,7 @@ body {
     flex-direction: column;
     overflow: hidden;
 }
-.paragraphs {
-    flex: 1;
-    padding: 10px 50px;
-    overflow-y: auto;
-}
+
 .form-suggestion {
     text-align: center;
     margin: 0 0 10px 0;

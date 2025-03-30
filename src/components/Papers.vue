@@ -68,7 +68,8 @@
                 <el-pagination
                     background
                     layout="prev, pager, next"
-                    :total="totalPages"
+                    :page-count="totalPages"
+                    v-model:current-page="curPage"
                 />
             </div>
         </div>
@@ -88,6 +89,8 @@ const headers = ref({
 const uploadRef = ref();
 
 const totalPages = ref(1);
+
+const curPage = ref(1);
 
 const searchKey = ref("");
 const search = async () => {
@@ -118,6 +121,13 @@ watch(
     }
 );
 
+watch(
+    () => curPage.value,
+    (newVal) => {
+        fetchPage(newVal);
+    }
+);
+
 const friendlySize = (bytes) => {
     if (bytes < 1024) return bytes + "B";
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + "KB";
@@ -128,6 +138,7 @@ const friendlySize = (bytes) => {
 
 const refreshDefault = () => {
     fetchPage(1);
+    curPage.value = 1;
 };
 
 const fetchPage = async (pageNo) => {

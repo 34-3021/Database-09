@@ -68,7 +68,13 @@
 .dialog-content {
     color: var(--text-color);
 }
-
+.paragraphs {
+    min-height: 0;
+    height: 600px;
+    resize: vertical;
+    padding: 10px 50px;
+    overflow-y: auto;
+}
 .paragraph {
     background-color: rgba(127, 127, 127, 0.2);
     padding: 15px 15px;
@@ -118,8 +124,8 @@
 }
 
 .chatbox {
-    height: 250px;
-
+    flex: 1;
+    min-height: 0;
     /* up border */
     border-top: 2px solid #ccc;
     display: flex;

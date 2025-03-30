@@ -38,6 +38,7 @@
                     type="textarea"
                     placeholder="内容"
                     style="width: 100%"
+                    :autosize="{ minRows: 4 }"
                 ></el-input>
             </div>
         </div>

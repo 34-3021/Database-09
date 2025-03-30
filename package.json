@@ -6,6 +6,7 @@
         "katex": "^0.16.10",
         "vconsole": "^3.15.0",
         "vue": "^3.4.38",
+        "vue-draggable-resizable": "^3.0.0",
         "vue-router": "^4.5.0"
     },
     "name": "papertour",
