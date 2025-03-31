@@ -17,6 +17,9 @@ import projectManager
 import websockets
 import json
 import requests
+import pypandoc
+import random
+import os
 from openai import AsyncOpenAI, OpenAI
 
 app = FastAPI()
@@ -72,6 +75,11 @@ class chatRequest(BaseModel):
     paragraph_title: str
     paragraph_current_content: str
     user_prompt: str
+
+
+class convertRequest(BaseModel):
+    markdown: str
+    target: str
 
 
 def gen_mysql_connection_and_validate_token(token: str) -> mysql.connector.MySQLConnection:
@@ -146,6 +154,29 @@ def login(account: NativeAccount):
         mysql_connection, username, password)
     mysql_connection.close()
     return {"success": success, "token": token, "error_message": error_message}
+
+
+@app.post("/convert")
+def convert_file(req: convertRequest):
+    valid_formats = ["pdf", "docx", "html", "tex", "odt"]
+    if req.target not in valid_formats:
+        raise HTTPException(status_code=400, detail="Invalid target format")
+    # Convert the file here
+    random_filename = f"converted_{random.randint(0, 100000)}.{req.target}"
+    # pypandoc.convert_text(req.markdown, req.target, format="md", extra_args=["--standalone", "--pdf-engine=xelatex", "-M", "mainfont:微软雅黑", "-M", "sansfont:微软雅黑", "-M", "monofont:微软雅黑"],
+    pypandoc.convert_text(req.markdown, req.target, format="md", extra_args=["--pdf-engine=xelatex", "-V", "CJKmainfont=\"SimSun\""],
+                          outputfile=random_filename
+                          )
+    # Check if the conversion was successful
+    if not os.path.exists(random_filename):
+        raise HTTPException(status_code=500, detail="Conversion failed")
+    with open(random_filename, "rb") as f:
+        output = f.read()
+
+    os.remove(random_filename)
+
+    # return the converted file in binary format
+    return Response(content=output, media_type="application/octet-stream", headers={"Content-Disposition": f"attachment; filename=converted.{req.target}", "Fname": f"converted.{req.target}"})
 
 
 @app.post("/upload")

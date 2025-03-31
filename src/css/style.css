@@ -59,6 +59,7 @@ html.dark-mode {
     --el-disabled-bg-color: #333;
     --el-table-border-color: #777;
     --el-table-border: 1px solid #777;
+    --el-fill-color: #333;
     --el-fill-color-lighter: #333;
     --el-fill-color-light: #555;
     --el-bg-color-overlay: #000;

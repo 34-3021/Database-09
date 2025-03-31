@@ -8,7 +8,19 @@
                 placeholder="项目名称"
                 v-loading="new_name_loading"
                 class="project-name-input"
-            ></el-input>
+            ></el-input
+            ><el-button
+                class="project-save-button"
+                type="primary"
+                @click="saveProject"
+                :loading="saving"
+                >保存</el-button
+            ><el-button
+                class="project-download-button"
+                type="primary"
+                @click="downloadDialogActive = true"
+                >导出</el-button
+            >
         </div>
         <div class="project-edit-status" :class="{ 'edited-warn': edited }">
             {{ edited ? "*未保存" : "" }}
@@ -71,6 +83,33 @@
             </div>
         </div>
     </div>
+    <el-dialog v-model="downloadDialogActive" title="导出选项" width="500">
+        <el-form :model="form">
+            <el-form-item label="格式" :label-width="formLabelWidth">
+                <el-select
+                    v-model="downloadOptions.format"
+                    placeholder="选择导出格式"
+                >
+                    <el-option label="Markdown (.md)(本地)" value="md" />
+                    <el-option label="Microsoft Word (.docx)" value="docx" />
+                    <el-option label="PDF (.pdf)" value="pdf" />
+                    <el-option label="HTML (.html)" value="html" />
+                    <el-option label="LaTeX (.tex)" value="tex" />
+                    <el-option label="ODT (.odt)" value="odt" />
+                </el-select>
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <div class="dialog-footer">
+                <el-button @click="downloadDialogActive = false"
+                    >取消</el-button
+                >
+                <el-button type="primary" @click="handleExport()">
+                    确认
+                </el-button>
+            </div>
+        </template>
+    </el-dialog>
 </template>
 <script setup>
 import {
@@ -88,6 +127,10 @@ import Paragraph from "./Paragraph.vue";
 const selectedParagraph = ref(0);
 const loginState = inject("loginState");
 
+const downloadDialogActive = ref(false);
+const downloadOptions = ref({
+    format: "md",
+});
 const loading = ref(false);
 const new_name_loading = ref(false);
 
@@ -95,6 +138,56 @@ const userInput = ref("");
 const userInputLoading = ref(false);
 
 const edited = ref(false);
+
+const downloadFile = (_blob, filename) => {
+    const url = window.URL.createObjectURL(_blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        a.remove();
+    }, 100);
+};
+
+const exportMarkDown = () => {
+    let paragraphs = projectData.value.paragraphs;
+    let content = "# " + projectData.value.project_name + "\n\n";
+    for (let i = 0; i < paragraphs.length; i++) {
+        content += "## " + paragraphs[i].title + "\n\n";
+        content += paragraphs[i].content + "\n\n";
+    }
+    content += "\n\n";
+    return content;
+};
+
+const handleExport = async () => {
+    const format = downloadOptions.value.format;
+    const content = exportMarkDown();
+    const valid_formats = ["docx", "pdf", "html", "tex", "odt"];
+    if (format === "md") {
+        const blob = new Blob([content], { type: "text/markdown" });
+        downloadFile(blob, projectData.value.project_name + ".md");
+    } else if (valid_formats.includes(format)) {
+        const response = await fetch(`https://local.tmysam.top:8001/convert`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                markdown: content,
+                target: format,
+            }),
+        });
+        const blob = await response.blob();
+        downloadFile(blob, projectData.value.project_name + "." + format);
+    } else {
+        console.error("Invalid format:", format);
+    }
+    downloadDialogActive.value = false;
+};
 
 const sendMessage = async () => {
     //userInputLoading.value = true;
@@ -104,39 +197,6 @@ const sendMessage = async () => {
         content: userInput.value,
         time: Date.now(),
     });
-    // /project/chat {project_name,paragraph_title,paragraph_current_content,user_prompt}
-
-    // let res = await fetch("https://local.tmysam.top:8001/project/chat", {
-    //     method: "POST",
-    //     headers: {
-    //         "Content-Type": "application/json",
-    //         infiniDocToken: loginState.value.token,
-    //     },
-    //     body: JSON.stringify({
-    //         project_name: projectData.value.project_name,
-    //         paragraph_title:
-    //             projectData.value.paragraphs[selectedParagraph.value].title,
-    //         paragraph_current_content:
-    //             projectData.value.paragraphs[selectedParagraph.value].content,
-    //         user_prompt: userInput.value,
-    //     }),
-    // });
-    // let data = await res.json();
-    // userInputLoading.value = false;
-    // if (!data.success) {
-    //     ElNotification({
-    //         title: "错误",
-    //         message: data.message,
-    //         type: "error",
-    //     });
-    //     return;
-    // }
-    // userInput.value = "";
-    // projectData.value.paragraphs[selectedParagraph.value].chatHistory.push({
-    //     role: "AI",
-    //     content: data.response,
-    //     time: Date.now(),
-    // });
     let ws = new WebSocket("wss://local.tmysam.top:8001/ws");
     ws.onopen = function () {
         ws.send(
@@ -153,22 +213,7 @@ const sendMessage = async () => {
             })
         );
     };
-    // let dat = {
-    //     role: "AI",
-    //     content: "",
-    //     time: Date.now(),
-    // };
-    // projectData.value.paragraphs[selectedParagraph.value].chatHistory.push(dat);
     ws.onmessage = function (evt) {
-        /**
-         * yield "--SYSTEM--"
-    yield msg[0]["content"]
-    yield "--DONE--"
-    yield "--AI--"
-    yield response
-    yield "--DONE--"
-    yield "--SYSTEM--"
-         */
         if (evt.data == "--DDONE--") {
             ws.close();
             return;
@@ -265,23 +310,6 @@ const projectData = ref({
     paragraphs: [],
 });
 
-// const projectData = ref({
-//     project_id: 0,
-//     project_name: "project_name",
-//     paragraphs: [
-//         {
-//             title: "paragraph1",
-//             content: "content1",
-//             chatHistory: [
-//                 {
-//                     role: "User",
-//                     content: "xxxx",
-//                 },
-//             ],
-//         },
-//     ],
-// });
-// a prop to receive the project_id
 const props = defineProps({
     project_id: Number,
 });
