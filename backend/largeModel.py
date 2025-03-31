@@ -1,6 +1,11 @@
 from openai import OpenAI, AsyncOpenAI
 from typing import AsyncGenerator
 import os
+from schemas import chatRequest
+import authenticate
+import filel
+import requests
+from fastapi import HTTPException
 
 
 def get_models(endpoint, api_key):
@@ -13,6 +18,33 @@ def get_models(endpoint, api_key):
         return models
     except Exception as e:
         return []
+
+
+async def get_ai_response(message: str, client: AsyncOpenAI, model: str) -> AsyncGenerator[str, None]:
+    response = await client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a helpful assistant, skilled in explaining "
+                    "complex concepts in simple terms."
+                ),
+            },
+            {
+                "role": "user",
+                "content": message,
+            },
+        ],
+        stream=True,
+    )
+
+    all_content = ""
+    async for chunk in response:
+        content = chunk.choices[0].delta.content
+        if content:
+            all_content += content
+            yield content
 
 
 def get_ai_response_primary(title: str, paragraph_title: str, cur_content: str, user_prompt: str, client: OpenAI, model: str):
@@ -67,3 +99,71 @@ async def get_ai_response_secondary(additional_info_s: str, msg: list, client: A
         if content:
             all_content += content
             yield content
+
+
+async def chat_project(req: chatRequest,  infiniDocToken: str):
+    mysql_connection = authenticate.gen_mysql_connection_and_validate_token(
+        infiniDocToken)
+    # todo implement chat
+    # response = req.user_prompt+" received"
+    unique_id = authenticate.getUniqueID(mysql_connection, infiniDocToken)
+    settings = authenticate.getSettings(mysql_connection, unique_id)
+    if settings["endpoint"] == "":
+        raise HTTPException(status_code=400, detail="Endpoint not set")
+    if settings["model"] == "":
+        raise HTTPException(status_code=400, detail="Model not set")
+    client = OpenAI(
+        api_key=settings["key"],
+        base_url=settings["endpoint"]
+    ) if settings["key"] != "" else OpenAI(
+        base_url=settings["endpoint"]
+    )
+    msg, response = get_ai_response_primary(
+        req.project_name, req.paragraph_title, req.paragraph_current_content, req.user_prompt, client, settings[
+            "model"]
+    )
+    yield "--SYSTEM--"
+    yield msg[0]["content"]
+    yield "--DONE--"
+    yield "--AI PROG--"
+    yield response
+    yield "--DONE--"
+    yield "--SYSTEM--"
+    kwds = [s.strip() for s in response]
+    additional_info_s = ""
+    if kwds[0] != "No":
+        resp = requests.post("http://localhost:8005/querymultiple", json={
+            "query_texts": kwds, "unique_id": unique_id})
+        if resp.status_code != 200:
+            raise HTTPException(status_code=resp.status_code,
+                                detail="Error in query")
+        result: dict = resp.json()
+        keys = result.keys()
+        fname_sha256 = filel.getFileNames(
+            mysql_connection, unique_id, keys)
+        dic = {}
+        for i in range(len(fname_sha256)):
+            dic[fname_sha256[i][1]] = fname_sha256[i][0]
+        res = {}
+        for i in keys:
+            res[dic[i]] = result[i]
+        for i in res.keys():
+            additional_info_s += "In document " + i + ":\n"
+            for j in res[i].keys():
+                additional_info_s += "In " + j + ":\n" + res[i][j] + "\n"
+        additional_info_s += "\n"
+    client2 = AsyncOpenAI(
+        api_key=settings["key"],
+        base_url=settings["endpoint"]
+    ) if settings["key"] != "" else AsyncOpenAI(
+        base_url=settings["endpoint"]
+    )
+    yield additional_info_s
+    yield "--DONE--"
+    yield "--AI--"
+    # get_ai_response_secondary is async function
+    async for text in get_ai_response_secondary(
+            additional_info_s, msg, client2, settings["model"]):
+        yield text
+    yield "--DONE--"
+    yield "--DDONE--"

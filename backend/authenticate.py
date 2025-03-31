@@ -2,9 +2,23 @@ from tauthAuthenticator import tauthAuthenticator
 import random
 import string
 import mysql.connector.connection as mysql_connection
+import mysql.connector
+import authenticate
 import time
 import regex
 import hashlib
+from fastapi import HTTPException
+from dbpassword import DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE
+
+
+def gen_mysql_connection_and_validate_token(token: str) -> mysql_connection.MySQLConnection:
+    mysql_connection = mysql.connector.connect(
+        host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_DATABASE)
+    success = authenticate.verifyLoginStatus(mysql_connection, token)
+    if not success:
+        mysql_connection.close()
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return mysql_connection
 
 
 def validateUserName(username: str):
