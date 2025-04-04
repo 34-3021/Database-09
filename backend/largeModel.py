@@ -60,9 +60,9 @@ def get_ai_response_primary(title: str, paragraph_title: str, cur_content: str, 
                     f"{cur_content}".strip() + "]."
                     "The requirement of the user is: ["
                     f"{user_prompt}".strip() + "]."
-                    "The user has provided a paper database, please reply with keywords(or phrases), one per line max 8, that are possibly helpful for you to write the paragraph."
-                    "Please DO NOT write any content in this message."
+                    "The user has provided a paper database, if you think you need the database, please reply with keywords(or phrases), one per line, max 4, that are possibly helpful for you to write the paragraph."
                     "If you think you don't need the paper database (eg. the user is asking you to simply correct the grammar), please reply with 'No'."
+                    "Remember DO NOT write any content in this message even you don't need the database."
             ),
         }
     ]
@@ -129,7 +129,8 @@ async def chat_project(req: chatRequest,  infiniDocToken: str):
     yield response
     yield "--DONE--"
     yield "--SYSTEM--"
-    kwds = [s.strip() for s in response]
+    respobj = response.splitlines()
+    kwds = [s.strip() for s in respobj]
     additional_info_s = ""
     if kwds[0] != "No":
         resp = requests.post("http://localhost:8005/querymultiple", json={

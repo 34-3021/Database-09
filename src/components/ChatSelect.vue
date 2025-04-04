@@ -28,7 +28,7 @@
             @click="newProject('Untitled')"
             class="new-project-button"
             v-loading="newProjectLoading"
-            >新建项目</el-button
+            >+</el-button
         >
     </div>
 </template>

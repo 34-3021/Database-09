@@ -4,16 +4,20 @@
             <div class="paragraph-control">
                 <el-button
                     type="primary"
+                    class="iconfont paragraph-control-button"
+                    text
                     @click="$emit('moveup')"
-                    v-show="isNotFirst"
-                    >↑</el-button
-                ><br />
+                    v-if="isNotFirst"
+                    >&#xe66c;</el-button
+                ><br v-if="isNotFirst" />
                 <el-button
                     type="primary"
+                    class="iconfont paragraph-control-button"
+                    text
                     @click="$emit('movedown')"
-                    v-show="isNotLast"
-                    >↓</el-button
-                ><br />
+                    v-if="isNotLast"
+                    >&#xe66b;</el-button
+                ><br v-if="isNotLast" />
                 <el-popconfirm
                     title="确定删除吗"
                     confirm-button-text="删除"
@@ -23,7 +27,12 @@
                     @confirm="$emit('delete')"
                 >
                     <template #reference
-                        ><el-button type="danger">删除</el-button></template
+                        ><el-button
+                            type="danger"
+                            text
+                            class="iconfont paragraph-control-button"
+                            >&#xe665;</el-button
+                        ></template
                     ></el-popconfirm
                 >
             </div>

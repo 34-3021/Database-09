@@ -36,14 +36,18 @@
 
 .main-left {
     width: 200px;
+    min-width: 200px;
     height: 100vh;
     overflow-x: auto;
+    background-color: var(--project-bg);
+    color: var(--project-text);
 }
 .main-main {
     flex: 1;
     height: 100vh;
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .home-main {
@@ -54,12 +58,24 @@
     display: flex;
 }
 
-.main-left {
-    background-color: #000000;
-}
-
 .dialog {
-    padding: 5px 20px;
+    background-color: rgba(127, 127, 127, 0.05);
+    padding: 15px 15px 15px 5px;
+    border-radius: 10px;
+    margin: 0 10px 10px 10px;
+    display: flex;
+}
+.dialog-control {
+    display: inline-block;
+}
+.dialog-control-button {
+    padding: 8px;
+    margin-left: 0;
+}
+.dialog-right {
+    display: inline-block;
+    flex: 1;
+    padding: 0 0 0 5px;
 }
 .dialog-role {
     font-weight: 700;
@@ -71,13 +87,11 @@
 .paragraphs {
     min-height: 0;
     height: 600px;
-    resize: vertical;
-    padding: 10px 50px;
-    overflow-y: auto;
+    padding: 10px 20px;
 }
 .paragraph {
-    background-color: rgba(127, 127, 127, 0.2);
-    padding: 15px 15px;
+    background-color: rgba(127, 127, 127, 0.05);
+    padding: 15px 15px 15px 5px;
     margin: 0 10px;
     border: 2px solid transparent;
     border-radius: 10px;
@@ -103,6 +117,10 @@
 .paragraph-control {
     display: inline-block;
 }
+.paragraph-control-button {
+    padding: 8px;
+    margin-left: 0;
+}
 .paragraph-main {
     display: inline-block;
     flex: 1;
@@ -112,7 +130,6 @@
     width: 100%;
 }
 .project-edit-status {
-    display: inline-block;
     padding: 5px 60px 5px 60px;
     color: var(--text-color);
 }
@@ -122,23 +139,29 @@
 .new-project-button {
     margin: 0 1em;
 }
-
-.chatbox {
+.project-left {
+    resize: horizontal;
+    overflow-y: auto;
+    width: 60%;
+    overflow-x: hidden;
+    min-width: 0;
+}
+.project-right {
     flex: 1;
-    min-height: 0;
-    /* up border */
-    border-top: 2px solid #ccc;
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .dialogs {
     flex: 1;
     overflow-y: auto;
+    min-width: 0;
 }
 .chat-input {
     height: 35px;
     padding: 0 20px 0 20px;
+    min-width: 0;
 }
 .user-input-prompt {
     flex: 1;

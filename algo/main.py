@@ -214,7 +214,7 @@ async def querymultiple(request: QueryMultiRequest):
 
     query_passages = {}
     for query_text in query_texts:
-        results = collection.query(query_texts=[query_text], n_results=3)
+        results = collection.query(query_texts=[query_text], n_results=2)
         ids = results["ids"][0]
 
         # format xxxxxx_k
@@ -224,8 +224,8 @@ async def querymultiple(request: QueryMultiRequest):
             if idx not in query_passages:
                 query_passages[idx] = []
             chunk = int(id.split("_")[1])
-            chunkbegin = max(0, chunk-2)
-            chunkend = chunk+3
+            chunkbegin = max(0, chunk-1)
+            chunkend = chunk+2
             for i in range(chunkbegin, chunkend):
                 query_passages[idx].append(str(i))
 

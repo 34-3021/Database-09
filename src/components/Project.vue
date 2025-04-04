@@ -1,68 +1,89 @@
 <template>
     <div class="project" v-loading="loading" @keyup.ctrl.s="saveProject">
-        <div class="project-edit-status">
-            项目名称<br />
-            <el-input
-                v-model="projectData.project_name"
-                @change="renameProject"
-                placeholder="项目名称"
-                v-loading="new_name_loading"
-                class="project-name-input"
-            ></el-input
-            ><el-button
-                class="project-save-button"
-                type="primary"
-                @click="saveProject"
-                :loading="saving"
-                >保存</el-button
-            ><el-button
-                class="project-download-button"
-                type="primary"
-                @click="downloadDialogActive = true"
-                >导出</el-button
-            >
-        </div>
-        <div class="project-edit-status" :class="{ 'edited-warn': edited }">
-            {{ edited ? "*未保存" : "" }}
-        </div>
-        <div class="paragraphs">
-            <div class="paragraph-divider" @click="insertNewParagraphBefore(0)">
-                +
+        <div class="project-left">
+            <div class="project-edit-status">
+                项目名称<br />
+                <el-input
+                    v-model="projectData.project_name"
+                    @change="renameProject"
+                    placeholder="项目名称"
+                    v-loading="new_name_loading"
+                    class="project-name-input"
+                ></el-input
+                ><el-button
+                    class="project-save-button"
+                    type="primary"
+                    @click="saveProject"
+                    :loading="saving"
+                    v-if="edited"
+                    >保存</el-button
+                ><el-popconfirm
+                    title="确定还原吗"
+                    confirm-button-text="还原"
+                    confirm-button-type="text"
+                    cancel-button-text="取消"
+                    cancel-button-type="primary"
+                    @confirm="loadProject()"
+                    v-if="edited"
+                    ><template #reference
+                        ><el-button type="danger" class="iconfont"
+                            >还原</el-button
+                        ></template
+                    ></el-popconfirm
+                ><el-button
+                    class="project-download-button"
+                    type="primary"
+                    @click="downloadDialogActive = true"
+                    >导出</el-button
+                >
             </div>
-            <Paragraph
-                v-for="(paragraph, index) in projectData.paragraphs"
-                v-model="projectData.paragraphs[index]"
-                @select="selectedParagraph = index"
-                :selected="selectedParagraph === index"
-                :isNotFirst="index !== 0"
-                :isNotLast="index !== projectData.paragraphs.length - 1"
-                :index="index"
-                @moveup="moveup(index)"
-                @movedown="movedown(index)"
-                @delete="deleteParagraph(index)"
-            ></Paragraph>
-            <div
-                class="content cent3r"
-                v-if="
-                    !projectData.paragraphs ||
-                    projectData.paragraphs.length === 0
-                "
-            >
-                【点击 + 以开始】
+            <div class="project-edit-status" :class="{ 'edited-warn': edited }">
+                {{ edited ? "*未保存" : "" }}
+            </div>
+            <div class="paragraphs">
+                <div
+                    class="paragraph-divider"
+                    @click="insertNewParagraphBefore(0)"
+                >
+                    +
+                </div>
+                <Paragraph
+                    v-for="(paragraph, index) in projectData.paragraphs"
+                    v-model="projectData.paragraphs[index]"
+                    @select="selectedParagraph = index"
+                    :selected="selectedParagraph === index"
+                    :isNotFirst="index !== 0"
+                    :isNotLast="index !== projectData.paragraphs.length - 1"
+                    :index="index"
+                    @moveup="moveup(index)"
+                    @movedown="movedown(index)"
+                    @delete="deleteParagraph(index)"
+                ></Paragraph>
+                <div
+                    class="content cent3r"
+                    v-if="
+                        !projectData.paragraphs ||
+                        projectData.paragraphs.length === 0
+                    "
+                >
+                    【点击 + 以开始】
+                </div>
             </div>
         </div>
 
         <div
-            class="chatbox"
+            class="project-right"
             v-if="projectData.paragraphs && projectData.paragraphs.length > 0"
         >
             <div class="dialogs">
                 <Dialog
-                    v-for="chat in projectData.paragraphs[selectedParagraph]
-                        .chatHistory"
+                    v-for="(chat, index) in projectData.paragraphs[
+                        selectedParagraph
+                    ].chatHistory"
                     :role="chat.role"
                     :content="chat.content"
                     :time="chat.time"
+                    :index="index"
                 ></Dialog>
             </div>
             <div class="chat-input">
