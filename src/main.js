@@ -10,6 +10,7 @@ require.ensure(
         require("./css/loginstyle.css");
         require("./css/docstyle.css");
         require("./css/homestyle.css");
+        require("./css/vscode-darkplus.css");
 
         var app = createApp(App);
         app.use(router);

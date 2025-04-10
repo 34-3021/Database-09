@@ -77,18 +77,28 @@ def get_ai_response_primary(title: str, paragraph_title: str, cur_content: str, 
     return msg, response.choices[0].message.content
 
 
-async def get_ai_response_secondary(additional_info_s: str, msg: list, client: AsyncOpenAI, model: str) -> AsyncGenerator[str, None]:
+async def get_ai_response_secondary(title: str, paragraph_title: str, cur_content: str, user_prompt: str, additional_info_s: str, client: AsyncOpenAI, model: str) -> AsyncGenerator[str, None]:
     # additional_info like {'title, chunk 1-3':'content 1-3', 'title, chunk 4-5':'content 4-5'}
-    msg.append(
+    additional_prompt = "The user has provided a paper database, please use the following to write the paragraph. " + \
+        f"{additional_info_s}" + \
+        "Note the database is just for reference, you should not just summary, write something ON YOUR OWN." if additional_info_s != "" else ""
+    msg = [
         {
             "role": "system",
             "content": (
-                "The following are the paper database provided by the user, please use them to write the paragraph."
-                f"{additional_info_s}"
-                "Now please write or modify the paragraph. output in full, do not add any extra information."
+                "The user is writing an academic paper titled '"
+                    f"{title}".strip() +
+                    "' and the user is writing a paragraph titled '"
+                    f"{paragraph_title}".strip() + "'."
+                    "Current content of the paragraph is: ["
+                    f"{cur_content}".strip() + "]."
+                    "The requirement of the user is: ["
+                    f"{user_prompt}".strip() + "]."
+                    + f"{additional_prompt}" +
+                    " Now please write or modify the paragraph. WRITE THE FULL PARAGRAPH, do not add any extra information."
             ),
         }
-    )
+    ]
     response = await client.chat.completions.create(
         model=model,
         messages=msg,
@@ -130,11 +140,11 @@ async def chat_project(req: chatRequest,  infiniDocToken: str):
     yield "--AI PROG--"
     yield response
     yield "--DONE--"
-    yield "--SYSTEM--"
     respobj = response.splitlines()
     kwds = [s.strip() for s in respobj]
     additional_info_s = ""
     if kwds[0] != "No":
+        yield "--SYSTEM--"
         resp = requests.post("http://localhost:8005/querymultiple", json={
             "query_texts": kwds, "unique_id": unique_id})
         if resp.status_code != 200:
@@ -155,18 +165,18 @@ async def chat_project(req: chatRequest,  infiniDocToken: str):
             for j in res[i].keys():
                 additional_info_s += "In " + j + ":\n" + res[i][j] + "\n"
         additional_info_s += "\n"
+        yield additional_info_s
+        yield "--DONE--"
     client2 = AsyncOpenAI(
         api_key=settings["key"],
         base_url=settings["endpoint"]
     ) if settings["key"] != "" else AsyncOpenAI(
         base_url=settings["endpoint"]
     )
-    yield additional_info_s
-    yield "--DONE--"
     yield "--AI--"
     # get_ai_response_secondary is async function
-    async for text in get_ai_response_secondary(
-            additional_info_s, msg, client2, settings["model"]):
+    async for text in get_ai_response_secondary(req.project_name, req.paragraph_title, req.paragraph_current_content, req.user_prompt,
+                                                additional_info_s,  client2, settings["model"]):
         yield text
     yield "--DONE--"
     yield "--DDONE--"

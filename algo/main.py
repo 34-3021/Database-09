@@ -25,7 +25,7 @@ app = FastAPI()
 embedding_f = embedding_functions.OpenAIEmbeddingFunction(
     api_key=keys.api_key,
     api_base=keys.api_base,
-    model_name="text-embedding-v3"
+    model_name=keys.model_name
 )
 
 app.add_middleware(
@@ -225,7 +225,7 @@ async def querymultiple(request: QueryMultiRequest):
                 query_passages[idx] = []
             chunk = int(id.split("_")[1])
             chunkbegin = max(0, chunk-1)
-            chunkend = chunk+2
+            chunkend = chunk+1
             for i in range(chunkbegin, chunkend):
                 query_passages[idx].append(str(i))
 

@@ -321,6 +321,7 @@ const insertNewParagraphBefore = (index) => {
         content: "",
         chatHistory: [],
     });
+    selectedParagraph.value = index;
 };
 
 provide("insertNewParagraphBefore", (index) => insertNewParagraphBefore(index));

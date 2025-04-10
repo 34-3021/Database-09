@@ -19,11 +19,11 @@ async def processUpload(mysql_connection: mysql_connection.MySQLConnection, toke
     unique_id = authenticate.getUniqueID(mysql_connection, token)
     if unique_id == None:
         return False
-    settings = authenticate.getSettings(mysql_connection, unique_id)
-    if settings["vecdb_endpoint"] == "":
-        raise HTTPException(status_code=400, detail="Endpoint not set")
-    if settings["vecdb_model"] == "":
-        raise HTTPException(status_code=400, detail="Model not set")
+    # settings = authenticate.getSettings(mysql_connection, unique_id)
+    # if settings["vecdb_endpoint"] == "":
+    #     raise HTTPException(status_code=400, detail="Endpoint not set")
+    # if settings["vecdb_model"] == "":
+    #     raise HTTPException(status_code=400, detail="Model not set")
 
     try:
         PdfReader(upload.file)

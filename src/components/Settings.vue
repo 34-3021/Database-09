@@ -46,7 +46,7 @@
                 />
                 <el-button type="primary" @click="sendMessage">发送</el-button>
 
-                <div class="ai-response">{{ aiResponse }}</div>
+                <div class="ai-response" ref="aiResponseContainer"></div>
             </div>
         </div>
     </div>
@@ -54,6 +54,8 @@
 <script setup>
 import HeadBar from "./headBar.vue";
 import { inject, onMounted, ref } from "vue";
+import { marked } from "marked";
+import hljs from "highlight.js";
 
 const loginState = inject("loginState");
 const uniqueid = ref("");
@@ -62,6 +64,8 @@ const endpoint = ref("");
 const key = ref("");
 const model = ref("");
 
+const aiResponseContainer = ref(null);
+
 const userInput = ref("");
 const aiResponse = ref("");
 
@@ -69,6 +73,14 @@ const models = ref([]);
 
 const resetModels = () => {
     models.value = [];
+};
+
+const parseRender = (data) => {
+    let container = aiResponseContainer.value;
+    if (container) {
+        container.innerHTML = marked.parse(data);
+    }
+    hljs.highlightAll();
 };
 
 const sendMessage = () => {
@@ -88,6 +100,7 @@ const sendMessage = () => {
     };
     ws.onmessage = function (evt) {
         aiResponse.value += evt.data;
+        parseRender(aiResponse.value);
     };
 };
 

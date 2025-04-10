@@ -19,7 +19,7 @@
                     class="menu-selection"
                     @click="switchPageProtected('Search')"
                 >
-                    &#xe670;搜索
+                    &#xe67f;搜索
                 </div>
                 <div
                     class="menu-selection"
