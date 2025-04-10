@@ -12,6 +12,7 @@
                         :multiple="true"
                         :auto-upload="false"
                         :on-success="refreshDefault"
+                        v-model:file-list="flist"
                         ><template #trigger>
                             <el-button type="primary">选择文件以上传</el-button>
                         </template>
@@ -19,6 +20,7 @@
                             class="ml-3"
                             type="success"
                             @click="submitUpload"
+                            v-if="flist.length > 0"
                         >
                             全部上传
                         </el-button>
@@ -96,6 +98,8 @@ const loginState = inject("loginState");
 const headers = ref({
     infiniDocToken: loginState.value.token,
 });
+
+const flist = ref([]);
 
 const uploadRef = ref();
 const loading = ref(false);
