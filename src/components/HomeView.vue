@@ -13,6 +13,7 @@ import { onMounted, ref, inject, provide, shallowRef } from "vue";
 import Chat from "./Chat.vue";
 import Settings from "./Settings.vue";
 import Papers from "./Papers.vue";
+import Search from "./Search.vue";
 
 const menuOn = ref(false);
 
@@ -42,6 +43,10 @@ const switchPage = (page) => {
         curcomponent.value = Papers;
     } else if (page === "Settings") {
         curcomponent.value = Settings;
+    } else if (page === "Search") {
+        curcomponent.value = Search;
+    } else {
+        console.error("Unknown page: " + page);
     }
 };
 provide("switchPage", (page) => switchPage(page));

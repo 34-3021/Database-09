@@ -174,3 +174,13 @@
 .cent3r {
     text-align: center;
 }
+.search-result-card {
+    display: inline-block;
+    background-color: rgba(127, 127, 127, 0.05);
+    padding: 15px 15px 15px 5px;
+    margin: 0 10px 10px 10px;
+}
+.search-result-card-title {
+    font-weight: 700;
+    color: var(--text-color);
+}

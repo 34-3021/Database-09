@@ -15,7 +15,12 @@
                 >
                     &#xe670;写作
                 </div>
-
+                <div
+                    class="menu-selection"
+                    @click="switchPageProtected('Search')"
+                >
+                    &#xe670;搜索
+                </div>
                 <div
                     class="menu-selection"
                     @click="switchPageProtected('Settings')"

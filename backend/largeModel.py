@@ -13,6 +13,8 @@ def get_models(endpoint, api_key):
         client = OpenAI(
             api_key=api_key,
             base_url=endpoint
+        ) if api_key != "" else OpenAI(
+            base_url=endpoint
         )
         models = client.models.list()
         return models

@@ -69,6 +69,7 @@ html.dark-mode {
     --el-fill-color-light: #555;
     --el-bg-color-overlay: #000;
     --el-text-color-primary: #fff;
+    --el-mask-color: rgba(0, 0, 0, 0.8);
 
     --menu-bg: #1c1c23;
     --menu-text: #efefef;

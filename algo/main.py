@@ -158,8 +158,8 @@ async def query(request: QueryRequest):
         if idx not in query_passages:
             query_passages[idx] = []
         chunk = int(id.split("_")[1])
-        chunkbegin = max(0, chunk-2)
-        chunkend = chunk+3
+        chunkbegin = max(0, chunk-1)
+        chunkend = chunk+1
         for i in range(chunkbegin, chunkend):
             query_passages[idx].append(str(i))
 

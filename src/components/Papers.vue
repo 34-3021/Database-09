@@ -36,8 +36,19 @@
                     <el-button type="primary" size="small" @click="search"
                         >搜索</el-button
                     >
+                    <div class="search-result-cards">
+                        <SearchResultCard
+                            v-for="item in searchResults"
+                            :resultObj="item"
+                        ></SearchResultCard>
+                    </div>
                 </div>
-                <el-table :data="tableData" stripe style="width: 100%">
+                <el-table
+                    :data="tableData"
+                    stripe
+                    style="width: 100%"
+                    v-loading="loading"
+                >
                     <el-table-column prop="name" label="文件名" width="180" />
                     <el-table-column prop="size" label="大小" width="180">
                         <template #default="scope">{{
@@ -76,8 +87,8 @@
     </div>
 </template>
 <script setup>
-import { ta } from "element-plus/es/locales.mjs";
 import HeadBar from "./headBar.vue";
+import SearchResultCard from "./SearchResultCard.vue";
 import { inject, onMounted, ref, watch } from "vue";
 
 const loginState = inject("loginState");
@@ -87,11 +98,10 @@ const headers = ref({
 });
 
 const uploadRef = ref();
-
+const loading = ref(false);
 const totalPages = ref(1);
-
 const curPage = ref(1);
-
+const searchResults = ref([]);
 const searchKey = ref("");
 const search = async () => {
     if (searchKey.value === "") {
@@ -108,7 +118,16 @@ const search = async () => {
         }
     );
     let data = await res.json();
-    console.log(data);
+    // data.result alike "filename":{"chunkx":"content","chunky":"content"}
+    // convert to array [{"filename":"filename","chunks":{"chunkx":"content","chunky":"content"}}
+    //]
+    let result = Object.keys(data.result).map((filename) => {
+        return {
+            filename: filename,
+            chunks: data.result[filename],
+        };
+    });
+    searchResults.value = result;
 };
 const submitUpload = () => {
     uploadRef.value.submit();
@@ -144,6 +163,7 @@ const refreshDefault = () => {
 const fetchPage = async (pageNo) => {
     // https://local.tmysam.top:8001/fileList?limit=10&offset=10*(pageNo-1)
     // headers: {infiniDocToken: token}
+    loading.value = true;
     let offset = (pageNo - 1) * 10;
     let res = await fetch(
         `https://local.tmysam.top:8001/fileList?limit=10&offset=${offset}`,
@@ -157,6 +177,7 @@ const fetchPage = async (pageNo) => {
     let data = await res.json();
     tableData.value = data.files;
     totalPages.value = Math.max(1, Math.floor(data.totalfiles / 10));
+    loading.value = false;
 };
 
 const downloadFile = async (seq) => {
