@@ -161,6 +161,7 @@ const friendlySize = (bytes) => {
 
 const refreshDefault = () => {
     fetchPage(1);
+    uploadRef.value.clearFiles();
     curPage.value = 1;
 };
 
