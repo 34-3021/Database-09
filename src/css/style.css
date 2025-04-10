@@ -251,6 +251,7 @@ body {
 }
 .ai-response {
     background-color: rgba(127, 127, 127, 0.1);
+    padding: 5px;
 }
 .chatdate {
     font-weight: 400;

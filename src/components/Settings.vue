@@ -167,7 +167,7 @@ const getSettings = async () => {
         await initSettings();
         return {
             endpoint: "",
-            key: "",
+            key: "KEY_NOT_NEEDED",
             model: "",
         };
     }
@@ -180,6 +180,9 @@ const getSettings = async () => {
 };
 
 const submitForm = async () => {
+    if (key.value === "") {
+        key.value = "KEY_NOT_NEEDED";
+    }
     let res = await setSettings({
         endpoint: endpoint.value,
         key: key.value,
