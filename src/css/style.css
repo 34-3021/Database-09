@@ -59,17 +59,19 @@ html.dark-mode {
     --el-text-color-regular: #fff;
     --el-input-bg-color: #222;
     --el-fill-color-blank: #222;
-    --el-table-tr-bg-color: #444;
-    --el-table-header-bg-color: #444;
-    --el-bg-color: #444;
+
+    --el-table-tr-bg-color: #222;
+    --el-table-header-bg-color: #222;
+    --el-bg-color: #1c1c1c;
     --el-disabled-bg-color: #333;
     --el-table-border-color: #777;
     --el-table-border: 1px solid #777;
-    --el-fill-color: #333;
-    --el-fill-color-lighter: #333;
-    --el-fill-color-light: #555;
-    --el-bg-color-overlay: #000;
+    --el-fill-color: #111;
+    --el-fill-color-lighter: #222;
+    --el-fill-color-light: #333;
+    --el-bg-color-overlay: #090808;
     --el-text-color-primary: #fff;
+    --el-text-color-secondary: #eee;
     --el-mask-color: rgba(0, 0, 0, 0.8);
 
     --menu-bg: #1c1c23;
@@ -131,7 +133,7 @@ body {
     font-family: "iconfont", Arial, sans-serif;
 }
 .menu-selection:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(127, 127, 127, 0.2);
 }
 
 #main {
