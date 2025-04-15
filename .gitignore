@@ -145,3 +145,5 @@ algo/keys.py
 algo/__pycache__/
 
 log.txt
+
+secrets/

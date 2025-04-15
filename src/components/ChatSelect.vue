@@ -36,6 +36,8 @@
 <script setup>
 import { inject, onMounted, ref, watch } from "vue";
 
+import { BACKEND_BASE_URL, WEBSOCKET_URL } from "./endpoints.js";
+
 const loginState = inject("loginState");
 
 const selectProject = inject("selectProject");
@@ -47,7 +49,7 @@ const loading = ref(false);
 const getProjects = async () => {
     loading.value = true;
     try {
-        let res = await fetch("https://local.tmysam.top:8001/project/get", {
+        let res = await fetch(BACKEND_BASE_URL + "/project/get", {
             headers: {
                 infiniDocToken: loginState.value.token,
             },
@@ -64,7 +66,7 @@ defineExpose({
 });
 
 const deleteProject = async (project_id) => {
-    let res = await fetch("https://local.tmysam.top:8001/project/delete", {
+    let res = await fetch(BACKEND_BASE_URL + "/project/delete", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -81,7 +83,7 @@ const deleteProject = async (project_id) => {
 const newProject = async (name) => {
     newProjectLoading.value = true;
     try {
-        let res = await fetch("https://local.tmysam.top:8001/project/create", {
+        let res = await fetch(BACKEND_BASE_URL + "/project/create", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

@@ -138,7 +138,10 @@ async def chat_project(req: chatRequest,  infiniDocToken: str):
     yield msg[0]["content"]
     yield "--DONE--"
     yield "--AI PROG--"
-    yield response
+    if response == "No":
+        yield "无需数据库"
+    else:
+        yield response
     yield "--DONE--"
     respobj = response.splitlines()
     kwds = [s.strip() for s in respobj]

@@ -61,14 +61,12 @@
                         <template #default="scope">
                             <el-button
                                 type="primary"
-                                size="mini"
                                 @click="downloadFile(scope.row.seq)"
                             >
                                 下载
                             </el-button>
                             <el-button
                                 type="danger"
-                                size="mini"
                                 @click="deleteFile(scope.row.seq)"
                                 :disabled="scope.row.deleting !== undefined"
                             >
@@ -92,6 +90,7 @@
 import HeadBar from "./headBar.vue";
 import SearchResultCard from "./SearchResultCard.vue";
 import { inject, onMounted, ref, watch } from "vue";
+import { BACKEND_BASE_URL, WEBSOCKET_URL } from "./endpoints.js";
 
 const loginState = inject("loginState");
 
@@ -112,15 +111,12 @@ const search = async () => {
         return;
     }
     let key = encodeURIComponent(searchKey.value);
-    let res = await fetch(
-        `https://local.tmysam.top:8001/search?keyword=${key}`,
-        {
-            method: "GET",
-            headers: {
-                infiniDocToken: loginState.value.token,
-            },
-        }
-    );
+    let res = await fetch(BACKEND_BASE_URL + `/search?keyword=${key}`, {
+        method: "GET",
+        headers: {
+            infiniDocToken: loginState.value.token,
+        },
+    });
     let data = await res.json();
     // data.result alike "filename":{"chunkx":"content","chunky":"content"}
     // convert to array [{"filename":"filename","chunks":{"chunkx":"content","chunky":"content"}}
@@ -161,7 +157,7 @@ const friendlySize = (bytes) => {
 
 const refreshDefault = () => {
     fetchPage(1);
-    uploadRef.value.clearFiles();
+    //uploadRef.value.clearFiles();
     curPage.value = 1;
 };
 
@@ -171,7 +167,7 @@ const fetchPage = async (pageNo) => {
     loading.value = true;
     let offset = (pageNo - 1) * 10;
     let res = await fetch(
-        `https://local.tmysam.top:8001/fileList?limit=10&offset=${offset}`,
+        BACKEND_BASE_URL + `/fileList?limit=10&offset=${offset}`,
         {
             method: "GET",
             headers: {
@@ -188,7 +184,7 @@ const fetchPage = async (pageNo) => {
 const downloadFile = async (seq) => {
     // https://local.tmysam.top:8001/download?seq=seq
     // headers: {infiniDocToken: token}
-    let res = await fetch(`https://local.tmysam.top:8001/download?seq=${seq}`, {
+    let res = await fetch(BACKEND_BASE_URL + `/download?seq=${seq}`, {
         method: "GET",
         headers: {
             infiniDocToken: loginState.value.token,
@@ -208,7 +204,7 @@ const deleteFile = async (seq) => {
     tableData.value.find((item) => item.seq === seq).deleting = true;
     // https://local.tmysam.top:8001/delete?seq=seq
     // headers: {infiniDocToken: token}
-    let res = await fetch(`https://local.tmysam.top:8001/delete?seq=${seq}`, {
+    let res = await fetch(BACKEND_BASE_URL + `/delete?seq=${seq}`, {
         method: "GET",
         headers: {
             infiniDocToken: loginState.value.token,

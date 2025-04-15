@@ -30,6 +30,7 @@
 import HeadBar from "./headBar.vue";
 import SearchResultCard from "./SearchResultCard.vue";
 import { inject, onMounted, ref, watch } from "vue";
+import { BACKEND_BASE_URL, WEBSOCKET_URL } from "./endpoints";
 
 const loginState = inject("loginState");
 const headers = ref({
@@ -45,15 +46,12 @@ const search = async () => {
     }
     loading.value = true;
     let key = encodeURIComponent(searchKey.value);
-    let res = await fetch(
-        `https://local.tmysam.top:8001/search?keyword=${key}`,
-        {
-            method: "GET",
-            headers: {
-                infiniDocToken: loginState.value.token,
-            },
-        }
-    );
+    let res = await fetch(BACKEND_BASE_URL + `/search?keyword=${key}`, {
+        method: "GET",
+        headers: {
+            infiniDocToken: loginState.value.token,
+        },
+    });
     let data = await res.json();
     // data.result alike "filename":{"chunkx":"content","chunky":"content"}
     // convert to array [{"filename":"filename","chunks":{"chunkx":"content","chunky":"content"}}

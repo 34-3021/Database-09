@@ -8,6 +8,7 @@
 <script setup>
 import { ref, watch, provide, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { BACKEND_BASE_URL, WEBSOCKET_URL } from "./components/endpoints";
 
 const loginState = ref({ loggedIn: false });
 
@@ -28,7 +29,7 @@ provide("loginState", loginState);
 
 const verifyInfiniDocToken = (token) => {
     return new Promise((resolve, reject) => {
-        fetch("https://local.tmysam.top:8001/login/verifyToken", {
+        fetch(BACKEND_BASE_URL + "/login/verifyToken", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

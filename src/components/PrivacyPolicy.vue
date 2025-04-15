@@ -5,8 +5,8 @@
 
             <p><span> </span></p>
 
-            <p><span>更新日期：2024年12月05日</span></p>
-            <p><span>生效日期：2024年12月05日</span></p>
+            <p><span>更新日期：2025年3月5日</span></p>
+            <p><span>生效日期：2025年3月5日</span></p>
 
             <p><span> </span></p>
 

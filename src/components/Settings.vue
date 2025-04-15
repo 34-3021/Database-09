@@ -33,7 +33,7 @@
                         :value="item.id"
                     ></el-option> </el-select
                 ><el-button type="primary" @click="updateModels"
-                    >更新模型</el-button
+                    >获取可用模型</el-button
                 ><br />
                 <el-button type="primary" @click="submitForm">保存</el-button
                 ><br />
@@ -56,6 +56,7 @@ import HeadBar from "./headBar.vue";
 import { inject, onMounted, ref } from "vue";
 import { marked } from "marked";
 import hljs from "highlight.js";
+import { BACKEND_BASE_URL, WEBSOCKET_URL } from "./endpoints.js";
 
 const loginState = inject("loginState");
 const uniqueid = ref("");
@@ -86,7 +87,7 @@ const parseRender = (data) => {
 const sendMessage = () => {
     //ws local.tmysam.top:8005
     aiResponse.value = "";
-    let ws = new WebSocket("wss://local.tmysam.top:8001/ws");
+    let ws = new WebSocket(WEBSOCKET_URL + "/ws");
     ws.onopen = function () {
         ws.send(
             JSON.stringify({
@@ -106,7 +107,7 @@ const sendMessage = () => {
 
 const getUniqueID = () => {
     return new Promise((resolve, reject) => {
-        fetch("https://local.tmysam.top:8001/settings/getUniqueID", {
+        fetch(BACKEND_BASE_URL + "/settings/getUniqueID", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -136,7 +137,7 @@ const initSettings = async () => {
 };
 
 const setSettings = async (settings) => {
-    let res = await fetch("https://local.tmysam.top:8001/user/settings/set", {
+    let res = await fetch(BACKEND_BASE_URL + "/user/settings/set", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -151,7 +152,7 @@ const setSettings = async (settings) => {
 };
 
 const getSettings = async () => {
-    let res = await fetch("https://local.tmysam.top:8001/user/settings", {
+    let res = await fetch(BACKEND_BASE_URL + "/user/settings", {
         headers: {
             infiniDocToken: loginState.value.token,
         },
@@ -202,7 +203,7 @@ const updateModels = async () => {
 };
 
 const getModels = async (endpoint, api_key) => {
-    let res = await fetch("https://local.tmysam.top:8001/llm/getModels", {
+    let res = await fetch(BACKEND_BASE_URL + "/llm/getModels", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

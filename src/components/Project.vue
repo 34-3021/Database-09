@@ -144,6 +144,7 @@ import {
 } from "vue";
 import Dialog from "./Dialog.vue";
 import Paragraph from "./Paragraph.vue";
+import { BACKEND_BASE_URL, WEBSOCKET_URL } from "./endpoints.js";
 
 const selectedParagraph = ref(0);
 const loginState = inject("loginState");
@@ -192,7 +193,7 @@ const handleExport = async () => {
         const blob = new Blob([content], { type: "text/markdown" });
         downloadFile(blob, projectData.value.project_name + ".md");
     } else if (valid_formats.includes(format)) {
-        const response = await fetch(`https://local.tmysam.top:8001/convert`, {
+        const response = await fetch(BACKEND_BASE_URL + `/convert`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -218,7 +219,7 @@ const sendMessage = async () => {
         content: userInput.value,
         time: Date.now(),
     });
-    let ws = new WebSocket("wss://local.tmysam.top:8001/ws");
+    let ws = new WebSocket(WEBSOCKET_URL + "/ws");
     ws.onopen = function () {
         ws.send(
             JSON.stringify({
@@ -341,7 +342,7 @@ const renameProject = async () => {
     new_name_loading.value = true;
     try {
         const response = await fetch(
-            `https://local.tmysam.top:8001/project/rename/${props.project_id}`,
+            BACKEND_BASE_URL + `/project/rename/${props.project_id}`,
             {
                 method: "POST",
                 headers: {
@@ -363,7 +364,7 @@ const loadProject = async () => {
     loading.value = true;
     try {
         const response = await fetch(
-            `https://local.tmysam.top:8001/project/getparagraphs/${props.project_id}`,
+            BACKEND_BASE_URL + `/project/getparagraphs/${props.project_id}`,
             {
                 headers: {
                     infiniDocToken: loginState.value.token,
@@ -374,7 +375,7 @@ const loadProject = async () => {
         projectData.value.paragraphs = JSON.parse(data.paragraphs);
 
         const response2 = await fetch(
-            `https://local.tmysam.top:8001/project/name/${props.project_id}`,
+            BACKEND_BASE_URL + `/project/name/${props.project_id}`,
             {
                 headers: {
                     infiniDocToken: loginState.value.token,
@@ -400,7 +401,7 @@ const saveProject = async () => {
         type: "info",
     });
     const response = await fetch(
-        `https://local.tmysam.top:8001/project/save/${props.project_id}`,
+        BACKEND_BASE_URL + `/project/save/${props.project_id}`,
         {
             method: "POST",
             headers: {

@@ -1,3 +1,4 @@
+import { BACKEND_BASE_URL, WEBSOCKET_URL } from "./endpoints.js";
 export const getTAuthStatus = () => {
     return new Promise((resolve, reject) => {
         fetch("https://account.tmysam.top/apis/sso-interface.php", {
@@ -57,7 +58,7 @@ export const loginWithTauthGetToken = (token) => {
     // http://local.tmysam.top:8001/login/tauth?token=tauth_token
 
     return new Promise((resolve, reject) => {
-        fetch(`https://local.tmysam.top:8001/login/tauth`, {
+        fetch(BACKEND_BASE_URL + `/login/tauth`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -137,7 +138,7 @@ export const loginNative = async (username, password) => {
         };
     }
     let passwordHash = await sha256(password);
-    let res = await fetch(`https://local.tmysam.top:8001/login/native`, {
+    let res = await fetch(BACKEND_BASE_URL + `/login/native`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -168,7 +169,7 @@ export const registerNative = async (username, password) => {
         };
     }
     let passwordHash = await sha256(password);
-    let res = await fetch(`https://local.tmysam.top:8001/register/native`, {
+    let res = await fetch(BACKEND_BASE_URL + `/register/native`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
