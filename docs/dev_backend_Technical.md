@@ -7,18 +7,15 @@
 -   server.py 用于启动 uvicorn 服务器
 -   main.py 定义服务器，提供 router，引入其他 router，包括 Websocket 的处理
 -   schemas.py 定义请求体
-
 -   tauthAuthenticator.py 对接第三方认证系统的支持库
 -   authenticate.py 认证系统的实现
 -   filel.py 文件上传与解析的实现，包括删除和更改操作
 -   projectManager.py 项目管理的实现，包括保存和加载操作
 -   largeModel.py LLM 交互相关的实现，包括核心的对话逻辑
-
 -   route_file.py 文件上传与解析的路由
 -   route_project.py 项目管理的路由
 -   route_settings.py 设置与自定义
 -   route_user.py 用户管理的路由，包括注册、登录、注销等操作
-
 -   dbpassword.py(.default) 数据库密码
 
 ## 用户管理

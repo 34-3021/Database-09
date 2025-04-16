@@ -1,3 +1,148 @@
+# 快速开始
+
+## 服务器端的安装与配置
+
+### MySQL
+
+你需要安装 MySQL 数据库，测试使用的数据库是 MySQL 8.0。
+
+你需要新建一个数据库，并给予用户访问这个数据库的权限，包括 `SELECT`、`INSERT`、`UPDATE`、`DELETE` 权限。
+
+**非常**不建议使用 `root` 用户来访问数据库。
+
+**非常**建议使用 `utf8mb4` 字符集。
+
+需要创建以下的表
+
+```sql
+CREATE TABLE `files` (
+  `id` int NOT NULL,
+  `size` int NOT NULL,
+  `sha256` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `tokens` (
+  `token` varchar(64) NOT NULL,
+  `time_accessed` bigint NOT NULL,
+  `UNIQUE_ID` tinytext NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `users` (
+  `username` varchar(32) NOT NULL,
+  `password` varchar(64) NOT NULL,
+  `salt` varchar(32) NOT NULL,
+  `id` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `user_files` (
+  `UNIQUE_ID` varchar(32) NOT NULL,
+  `fileid` int NOT NULL,
+  `name` text NOT NULL,
+  `seq` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `user_projects` (
+  `UNIQUE_ID` varchar(32) NOT NULL,
+  `project_id` int NOT NULL,
+  `project_name` text NOT NULL,
+  `paragraphs` mediumtext NOT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `user_settings` (
+  `UNIQUE_ID` varchar(32) NOT NULL,
+  `setting` varchar(32) NOT NULL,
+  `value` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+需要创建以下索引：
+
+```sql
+ALTER TABLE `files`
+  ADD PRIMARY KEY (`id`);
+ALTER TABLE `tokens`
+  ADD UNIQUE KEY `token` (`token`);
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `username` (`username`);
+ALTER TABLE `user_files`
+  ADD PRIMARY KEY (`seq`),
+  ADD KEY `UNIQUE_ID` (`UNIQUE_ID`);
+ALTER TABLE `user_projects`
+  ADD PRIMARY KEY (`project_id`);
+ALTER TABLE `user_settings`
+  ADD PRIMARY KEY (`UNIQUE_ID`,`setting`);
+```
+
+设置自增属性：
+
+```sql
+ALTER TABLE `files`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+ALTER TABLE `users`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+ALTER TABLE `user_files`
+  MODIFY `seq` int NOT NULL AUTO_INCREMENT;
+ALTER TABLE `user_projects`
+  MODIFY `project_id` int NOT NULL AUTO_INCREMENT;
+COMMIT;
+```
+
+### Python
+
+你需要安装 Python 3.11+，并建议使用 `venv` 创建一个虚拟环境。
+
+然后，你需要确保安装在 `requirements.txt` 中的所有依赖。
+
+```bash
+pip install -r requirements.txt
+```
+
+你需要修改几个文件
+
+`backend/dbpassword.py`，其模板是 `backend/dbpassword.py.default`，你需要将其复制一份，并修改其中的数据库连接信息。
+
+`algo/keys.py`，其模板是 `algo/keys.py.default`，你需要将其复制一份，并修改其中的向量化 API 密钥信息。
+
+此外，如果不使用 ssl，需要修改 `backend/server.py` 与 `algo/server.py`，删除 `ssl_keyfile=` 与 `ssl_certfile=` 两个参数。
+
+> 注意，如果不使用 SSL，你还需要修改 `src/components/endpoints.js` 中的 `https://` 为 `http://`。
+
+> 注意：由于在非 https 且非 localhost 访问时，Crypto 是不允许的，你需要找到 sha256 的替代方法。
+
+如果你需要使用 ssl，需要在上述两个文件中，设置 `ssl_keyfile=` 与 `ssl_certfile=` 的值为你自己的证书文件。
+
+### Chroma
+
+由于使用了 Python 内建的持久化运行的 Chroma 客户端，因此只需要安装 ChromaDB 并确定其与 Python 配合良好即可。
+
+### Pandoc
+
+文献的多格式导出功能依赖于后端，后端使用 Pandoc 实现将 Markdown 转换为其他格式的功能。
+你需要安装 Pandoc，并确保其在系统的 PATH 中。确保可以在命令行中运行 `pandoc` 命令。
+
+## 启动服务器
+
+对于 Windows，我们提供了一个 `run.bat` 文件，你或许需要修改其中的 python 路径。
+
+对于 Linux 和 macOS，你需要手动运行 `backend/server.py` 和 `algo/server.py`。
+
+## 前端运行
+
+这非常简单，你只需要安装 NodeJS 18+，然后运行以下命令：
+
+```bash
+npm install
+```
+
+要运行，你只需要运行以下命令：
+
+```bash
+npm run serve
+```
+
+要构建，你只需要运行以下命令：
+
+```bash
+npm run build
+```
+
 # 前端文档
 
 ## 项目文件结构
@@ -25,6 +170,7 @@
     -   tauth.js 用于处理用户认证
 
 -   css/
+
     -   homestyle.css 用于处理登录后页面的样式
     -   style.css 用于处理整体的样式
     -   loginstyle.css 用于处理登录页面的样式
@@ -89,7 +235,9 @@
 
 ### 弹性布局
 
-使用 CSS 的 Flexbox 实现了页面的弹性布局。
+使用 CSS 的 Flexbox 实现了页面的弹性布局。通过设置元素的 `display: flex` 和 `flex-direction` 属性实现了元素的排列方式。
+
+另外，使用了 `resize` 属性，支持用户拖动更改各个组件的大小。
 
 ### 上传页面
 
@@ -111,6 +259,12 @@
 ## API 调用
 
 在 localStorage 中存储了 Token，在每次请求时从 localStorage 中获取 Token，并将 Token 添加到请求头中。
+
+每次打开页面时，前端会自动校验 Token 的有效性，如果 Token 无效，则跳转到登录页面。
+
+## 编辑器
+
+本项目的思想是一个 Web App，因此在编辑的全程（除非调用接口）是无需与后端交互的。在导出时，前端可以将内容生成一个 Markdown，但对于其他格式，会调用后端接口提供格式转换。
 
 # 后端技术实现文档
 
@@ -376,47 +530,6 @@ flowchart
 ## 与算法层交互
 
 使用 RESTFul API 的方式与算法层交互。
-
-# 算法层技术实现文档
-
-该文档介绍算法层的实现。
-
-## 技术栈
-
-该部分主要涉及论文库的解析与 ChromaDB 的使用。
-
-## 用户分割
-
-对于不同用户之间的论文相互隔离，不同用户使用不同的 collection 来存储论文。查询时限定在该用户的 collection 中进行。
-
-## 论文解析
-
-对于每一个 PDF 文件，使用 PyPDF 读取 PDF 文件，提取文本。提取文本后，根据固定长度的字符串进行分割，以灵活查询论文的不同片段，也规避了 ChromaDB 的 token 限制。在读取后，根据文件的 sha256 码和第几个片段创建一个唯一 id，另外将原来的文件 ID 作为标签，以便后续分类查询与删除。
-
-## 关键词检索
-
-实际上是在 ChromaDB 中进行的检索。注意，制作了一些精细化处理，例如：检索到的两个最匹配片段分别位于论文 A 的第 10 段和论文 B 的第 10 段。他会自动将前后的段落（+-1）也查询出来，考虑到文本的连贯性。
-
-另外，对于一些情况做了合并，例如查询到的片段是 A 的 10 和 12 段，则理论上需要以下片段
-
-```
-9 10 11
-11 12 13
-```
-
-系统会自动合并相邻的片段，输出会类似于
-
-```
-chunk 9 - 13: 9-13段的内容
-```
-
-## 多关键词检索
-
-检索多次，然后一齐合并。
-
-# 算法层代码
-
-较为简单，都放在 `main.py` 中了。包括上述的功能，以及 pydantic 的请求体。
 
 # API 文档
 

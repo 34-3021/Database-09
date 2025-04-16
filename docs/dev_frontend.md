@@ -7,33 +7,25 @@
     -   NotLoggedInView.vue 登录前主页面
     -   NotLoggedInMenu.vue 登录前的侧边菜单
     -   PrivacyPolicy.vue 隐私政策页面
-
     -   headBar.vue 头部
-
     -   LoginView.vue 登录页面
     -   RegisterView.vue 注册页面
-
     -   HomeView.vue 登录后主页面
-
     -   Menu.vue 登录后侧边菜单
-
     -   Chat.vue 写作的主页面
     -   ChatSelect.vue 写作左面的选择项目列表
     -   Project.vue 项目的主页面
     -   Dialog.vue 单个对话
     -   Paragraph.vue 单个段落
-
     -   Papers.vue 论文库的主页面
-
     -   Search.vue 搜索的主页面
     -   SearchResultCard.vue 搜索结果卡片
-
     -   Setting.vue 设置的主页面
-
     -   endpoints.js 用于定义 API 地址
     -   tauth.js 用于处理用户认证
 
 -   css/
+
     -   homestyle.css 用于处理登录后页面的样式
     -   style.css 用于处理整体的样式
     -   loginstyle.css 用于处理登录页面的样式
@@ -98,7 +90,9 @@
 
 ### 弹性布局
 
-使用 CSS 的 Flexbox 实现了页面的弹性布局。
+使用 CSS 的 Flexbox 实现了页面的弹性布局。通过设置元素的 `display: flex` 和 `flex-direction` 属性实现了元素的排列方式。
+
+另外，使用了 `resize` 属性，支持用户拖动更改各个组件的大小。
 
 ### 上传页面
 
@@ -120,3 +114,9 @@
 ## API 调用
 
 在 localStorage 中存储了 Token，在每次请求时从 localStorage 中获取 Token，并将 Token 添加到请求头中。
+
+每次打开页面时，前端会自动校验 Token 的有效性，如果 Token 无效，则跳转到登录页面。
+
+## 编辑器
+
+本项目的思想是一个 Web App，因此在编辑的全程（除非调用接口）是无需与后端交互的。在导出时，前端可以将内容生成一个 Markdown，但对于其他格式，会调用后端接口提供格式转换。

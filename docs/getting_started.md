@@ -112,6 +112,11 @@ pip install -r requirements.txt
 
 由于使用了 Python 内建的持久化运行的 Chroma 客户端，因此只需要安装 ChromaDB 并确定其与 Python 配合良好即可。
 
+### Pandoc
+
+文献的多格式导出功能依赖于后端，后端使用 Pandoc 实现将 Markdown 转换为其他格式的功能。
+你需要安装 Pandoc，并确保其在系统的 PATH 中。确保可以在命令行中运行 `pandoc` 命令。
+
 ## 启动服务器
 
 对于 Windows，我们提供了一个 `run.bat` 文件，你或许需要修改其中的 python 路径。
