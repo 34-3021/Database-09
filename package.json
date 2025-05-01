@@ -15,7 +15,7 @@
     "description": "Paper Tour",
     "main": "index.js",
     "devDependencies": {
-        "@babel/core": "^7.26.10",
+        "@babel/core": "^7.27.1",
         "@babel/preset-env": "^7.25.4",
         "@types/katex": "^0.16.7",
         "babel-loader": "^10.0.0",
