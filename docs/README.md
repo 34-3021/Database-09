@@ -100,11 +100,13 @@ pip install -r requirements.txt
 
 `algo/keys.py`，其模板是 `algo/keys.py.default`，你需要将其复制一份，并修改其中的向量化 API 密钥信息。
 
-此外，如果不使用 ssl，需要修改 `backend/server.py` 与 `algo/server.py`，删除 `ssl_keyfile=` 与 `ssl_certfile=` 两个参数。
+此外，如果不使用 ssl，需要修改 `backend/server.py`，删除 `ssl_keyfile=` 与 `ssl_certfile=` 两个参数。
 
 > 注意，如果不使用 SSL，你还需要修改 `src/components/endpoints.js` 中的 `https://` 为 `http://`。
 
 > 注意：由于在非 https 且非 localhost 访问时，Crypto 是不允许的，你需要找到 sha256 的替代方法。
+
+> 注意：你需要一个 local.tmysam.top 的证书（自签名证书，用于开发），生产环境，请替换 `endpoints.js` 中为你自己的域名，并且妥善配置证书。
 
 如果你需要使用 ssl，需要在上述两个文件中，设置 `ssl_keyfile=` 与 `ssl_certfile=` 的值为你自己的证书文件。
 

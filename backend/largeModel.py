@@ -54,17 +54,16 @@ def get_ai_response_primary(title: str, paragraph_title: str, cur_content: str, 
         {
             "role": "system",
             "content": (
-                    "The user is writing an academic paper titled '"
+                    "用户正在写一篇标题为'"
                     f"{title}".strip() +
-                    "' and the user is writing a paragraph titled '"
+                    "'的综述，他正在写一个标题为'"
                     f"{paragraph_title}".strip() + "'."
-                    "Current content of the paragraph is: ["
-                    f"{cur_content}".strip() + "]."
-                    "The requirement of the user is: ["
-                    f"{user_prompt}".strip() + "]."
-                    "The user has provided a paper database, if you think you need the database, please reply with keywords(or phrases), one per line, max 4, that are possibly helpful for you to write the paragraph."
-                    "If you think you don't need the paper database (eg. the user is asking you to simply correct the grammar), please reply with 'No'."
-                    "Remember DO NOT write any content in this message even you don't need the database."
+                    "的段落，现在的内容是 ["
+                    f"{cur_content}".strip() + "]"
+                    "，他的要求是：["
+                    f"{user_prompt}".strip() + "]。\n"
+                    "用户提供了论文库，如果你需要或用户提出要求参考，请输出你的搜索关键词（例如：“x关于y的观点”，或关键词。禁止使用“x的观点”，无法精确搜索） 每行一个，最多4个，请输出可能对你最有帮助的。系统将搜索。\n"
+                    "如果你认为你不需要数据库，请回复英文 'No'，不要回复其他内容。"
             ),
         }
     ]
@@ -81,11 +80,12 @@ async def get_ai_response_secondary(title: str, paragraph_title: str, cur_conten
     # additional_info like {'title, chunk 1-3':'content 1-3', 'title, chunk 4-5':'content 4-5'}
     additional_prompt = "The user has provided a paper database, please use the following to write the paragraph. " + \
         f"{additional_info_s}" + \
-        "Note the database is just for reference, you should not just summary, write something ON YOUR OWN." if additional_info_s != "" else ""
+        "Note the database is just for reference, you should not just summary, write something ON YOUR OWN. If you need to cite, use latex format \\cite with given document ID." if additional_info_s != "" else ""
     msg = [
         {
             "role": "system",
             "content": (
+                f"{additional_prompt}"
                 "The user is writing an academic paper titled '"
                     f"{title}".strip() +
                     "' and the user is writing a paragraph titled '"
@@ -94,8 +94,7 @@ async def get_ai_response_secondary(title: str, paragraph_title: str, cur_conten
                     f"{cur_content}".strip() + "]."
                     "The requirement of the user is: ["
                     f"{user_prompt}".strip() + "]."
-                    + f"{additional_prompt}" +
-                    " Now please write or modify the paragraph. WRITE THE FULL PARAGRAPH, do not add any extra information."
+                    " Now please write the paragraph. Follow the language of the requirement of the user(to infer the user's language). WRITE THE FULL PARAGRAPH, do not add any extra information."
             ),
         }
     ]
@@ -149,24 +148,25 @@ async def chat_project(req: chatRequest,  infiniDocToken: str):
     if kwds[0] != "No":
         yield "--SYSTEM--"
         resp = requests.post("http://localhost:8005/querymultiple", json={
-            "query_texts": kwds, "unique_id": unique_id})
+            "query_texts": kwds, "unique_id": unique_id, "filters": req.refs})
         if resp.status_code != 200:
             raise HTTPException(status_code=resp.status_code,
                                 detail="Error in query")
         result: dict = resp.json()
         keys = result.keys()
-        fname_sha256 = filel.getFileNames(
-            mysql_connection, unique_id, keys)
-        dic = {}
-        for i in range(len(fname_sha256)):
-            dic[fname_sha256[i][1]] = fname_sha256[i][0]
-        res = {}
+        # fname_sha256 = filel.getFileNames(
+        #     mysql_connection, unique_id, keys)
+        # dic = {}
+        # for i in range(len(fname_sha256)):
+        #     dic[fname_sha256[i][1]] = fname_sha256[i][0]
+        # res = {}
+        # for i in keys:
+        #     res[dic[i]] = result[i]
         for i in keys:
-            res[dic[i]] = result[i]
-        for i in res.keys():
-            additional_info_s += "In document " + i + ":\n"
-            for j in res[i].keys():
-                additional_info_s += "In " + j + ":\n" + res[i][j] + "\n"
+            additional_info_s += "Document ID: " + i[:10] + \
+                " (you need to use this for cite):\n"
+            for j in result[i].keys():
+                additional_info_s += "In " + j + ":\n" + result[i][j] + "\n"
         additional_info_s += "\n"
         yield additional_info_s
         yield "--DONE--"

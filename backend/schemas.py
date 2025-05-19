@@ -40,6 +40,7 @@ class chatRequest(BaseModel):
     paragraph_title: str
     paragraph_current_content: str
     user_prompt: str
+    refs: list[str]
 
 
 class convertRequest(BaseModel):

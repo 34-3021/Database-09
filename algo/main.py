@@ -52,6 +52,7 @@ class QueryRequest(BaseModel):
 class QueryMultiRequest(BaseModel):
     unique_id: str
     query_texts: list[str]
+    filters: list[str]
 
 
 class UniqueId(BaseModel):
@@ -66,10 +67,31 @@ class generateRequest(BaseModel):
     paragraph_title: str
 
 
+def extractauthor(chunk: str):
+    llmclient = OpenAI(
+        api_key=keys.llm_api_key,
+        base_url=keys.llm_api_base
+    )
+    # attempt to extract the author from the first chunk
+    prompt = "以下为某篇论文 PDF 提取出的第一段内容，如果你觉得可以提取出作者信息，请提取出作者信息，格式为：“人名、人名”\n\n如果你觉得无法提取出作者信息，请回复“不详”。\n\n内容如下：\n\n" + \
+        chunk + "\n\n 仅包括人名或“不详”。不要回复多余信息"
+    response = llmclient.chat.completions.create(
+        model=keys.llm_model_name,
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        stream=False,
+    )
+    return response.choices[0].message.content.strip()
+
+
 def processfile(fname: str, filename: str, unique_id: str):
     collection = client.get_or_create_collection(name=unique_id,
                                                  embedding_function=embedding_f)
-    reader = PdfReader(filename)
+    reader = PdfReader(filename, strict=False)
     number_of_pages = len(reader.pages)
     text_all = ""
     for i in range(number_of_pages):
@@ -81,8 +103,11 @@ def processfile(fname: str, filename: str, unique_id: str):
     text_all = text_all.replace("\n", " ")
     # remove all \r
     text_all = text_all.replace("\r", " ")
-    # sep with . to make it a sentence
-    sentences = text_all.split(".")
+    # remove all \x00
+    text_all = text_all.replace("\x00", " ")
+    # sep with . ? ！ 。 ! ？ to make it a sentence
+    sentences = [s.strip() for s in text_all.replace('?', '.').replace('？', '.').replace(
+        '。', '.').replace('!', '.').replace('！', '.').split('.') if s.strip()]
     sentence_groups = []
     sentence_groups_ids = []
     metadatas = []
@@ -100,6 +125,18 @@ def processfile(fname: str, filename: str, unique_id: str):
     sentence_groups.append(cur_sentence)
     sentence_groups_ids.append(fname+"_"+str(i))
     metadatas.append({"filename": fname})
+    # extract author from the first chunk
+    author = ""
+    if len(sentence_groups) > 0:
+        author_ = extractauthor(sentence_groups[0])
+        if author_ != "作者不详":
+            author = author_
+    # add author to the start of each chunk
+    for i in range(len(sentence_groups)):
+        if author != "":
+            sentence_groups[i] = author + "： " + sentence_groups[i]
+        else:
+            sentence_groups[i] = sentence_groups[i]
 
     for i in range(0, len(sentence_groups), 10):
         collection.add(documents=sentence_groups[i:i+10],
@@ -212,9 +249,16 @@ async def querymultiple(request: QueryMultiRequest):
     # Perform a search for top 10 similar sentences
     query_texts = request.query_texts
 
+    filter = {
+        "filename": {
+            "$in": request.filters
+        }
+    }
+
     query_passages = {}
     for query_text in query_texts:
-        results = collection.query(query_texts=[query_text], n_results=2)
+        results = collection.query(
+            query_texts=[query_text], n_results=3, where=filter)
         ids = results["ids"][0]
 
         # format xxxxxx_k

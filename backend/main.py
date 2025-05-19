@@ -58,7 +58,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 project_name=message_dict["project_name"],
                 paragraph_title=message_dict["paragraph_title"],
                 paragraph_current_content=message_dict["paragraph_current_content"],
-                user_prompt=message_dict["user_prompt"]
+                user_prompt=message_dict["user_prompt"],
+                refs=message_dict["refs"]
             )
             async for text in largeModel.chat_project(req, message_dict["token"]):
                 await websocket.send_text(text)

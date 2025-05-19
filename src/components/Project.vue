@@ -75,32 +75,47 @@
             class="project-right"
             v-if="projectData.paragraphs && projectData.paragraphs.length > 0"
         >
-            <div class="dialogs">
-                <Dialog
-                    v-for="(chat, index) in projectData.paragraphs[
-                        selectedParagraph
-                    ].chatHistory"
-                    :role="chat.role"
-                    :content="chat.content"
-                    :time="chat.time"
-                    :index="index"
-                ></Dialog>
+            <div class="project-right-top">
+                <el-transfer
+                    v-model="
+                        projectData.paragraphs[selectedParagraph]
+                            .selectedreferences
+                    "
+                    filterable
+                    :filter-method="filterMethod"
+                    :titles="['论文库', '本段参考']"
+                    filter-placeholder="搜索论文"
+                    :data="allreferences"
+                />
             </div>
-            <div class="chat-input">
-                <form
-                    @submit.prevent="sendMessage"
-                    class="input-form"
-                    v-loading="userInputLoading"
-                >
-                    <el-input
-                        placeholder="输入你的要求"
-                        v-model="userInput"
-                        class="user-input-prompt"
-                    ></el-input>
-                    <el-button type="primary" @click="sendMessage">
-                        发送
-                    </el-button>
-                </form>
+            <div class="project-right-bottom">
+                <div class="dialogs">
+                    <Dialog
+                        v-for="(chat, index) in projectData.paragraphs[
+                            selectedParagraph
+                        ].chatHistory"
+                        :role="chat.role"
+                        :content="chat.content"
+                        :time="chat.time"
+                        :index="index"
+                    ></Dialog>
+                </div>
+                <div class="chat-input">
+                    <form
+                        @submit.prevent="sendMessage"
+                        class="input-form"
+                        v-loading="userInputLoading"
+                    >
+                        <el-input
+                            placeholder="输入你的要求"
+                            v-model="userInput"
+                            class="user-input-prompt"
+                        ></el-input>
+                        <el-button type="primary" @click="sendMessage">
+                            发送
+                        </el-button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -231,6 +246,8 @@ const sendMessage = async () => {
                         .content,
                 user_prompt: userInput.value,
                 token: loginState.value.token,
+                refs: projectData.value.paragraphs[selectedParagraph.value]
+                    .selectedreferences,
                 type: "project",
             })
         );
@@ -321,6 +338,7 @@ const insertNewParagraphBefore = (index) => {
         title: "",
         content: "",
         chatHistory: [],
+        selectedreferences: [],
     });
     selectedParagraph.value = index;
 };
@@ -332,6 +350,8 @@ const projectData = ref({
     project_name: "",
     paragraphs: [],
 });
+
+const allreferences = ref([]);
 
 const props = defineProps({
     project_id: Number,
@@ -384,6 +404,21 @@ const loadProject = async () => {
         );
         const data2 = await response2.json();
         projectData.value.project_name = data2.project_name;
+
+        const res3 = await fetch(
+            BACKEND_BASE_URL + `/fileList?limit=100&offset=0`,
+            {
+                method: "GET",
+                headers: {
+                    infiniDocToken: loginState.value.token,
+                },
+            }
+        );
+        const data3 = await res3.json();
+        allreferences.value = data3.files.map((file) => ({
+            key: file.sha256,
+            label: file.name,
+        }));
     } finally {
         loading.value = false;
         edited.value = false;

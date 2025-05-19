@@ -90,10 +90,10 @@ def getUserFileList(mysql_connection: mysql_connection.MySQLConnection, token: s
     mysql_cursor = mysql_connection.cursor()
     # SELECT name,(SELECT size from `files` where id=fileid) AS fsize FROM `user_files` WHERE `UNIQUE_ID`="" ORDER BY seq DESC LIMIT batch_size OFFSET offset
     mysql_cursor.execute(
-        "SELECT `name`,(SELECT size from `files` where `id`=`fileid`),`seq` FROM `user_files` WHERE `UNIQUE_ID`=%s ORDER BY `seq` DESC LIMIT %s OFFSET %s;", (unique_id, batch_size, offset))
+        "SELECT `name`,(SELECT size from `files` where `id`=`fileid`),(SELECT sha256 from `files` where `id`=`fileid`),`seq` FROM `user_files` WHERE `UNIQUE_ID`=%s ORDER BY `seq` DESC LIMIT %s OFFSET %s;", (unique_id, batch_size, offset))
     files = mysql_cursor.fetchall()
 
-    files = [{"name": file[0], "size": file[1], "seq": file[2]}
+    files = [{"name": file[0], "size": file[1], "sha256": file[2], "seq": file[3]}
              for file in files]
 
     # totalfiles
