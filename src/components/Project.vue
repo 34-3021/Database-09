@@ -420,8 +420,10 @@ const loadProject = async () => {
             label: file.name,
         }));
     } finally {
-        loading.value = false;
-        edited.value = false;
+        setTimeout(() => {
+            loading.value = false;
+            edited.value = false;
+        }, 50);
     }
 };
 
