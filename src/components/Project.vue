@@ -383,39 +383,39 @@ const renameProject = async () => {
 const loadProject = async () => {
     loading.value = true;
     try {
-        const response = await fetch(
-            BACKEND_BASE_URL + `/project/getparagraphs/${props.project_id}`,
-            {
-                headers: {
-                    infiniDocToken: loginState.value.token,
-                },
-            }
-        );
-        const data = await response.json();
-        projectData.value.paragraphs = JSON.parse(data.paragraphs);
+        const [paragraphsResponse, nameResponse, filesResponse] =
+            await Promise.all([
+                fetch(
+                    BACKEND_BASE_URL +
+                        `/project/getparagraphs/${props.project_id}`,
+                    {
+                        headers: {
+                            infiniDocToken: loginState.value.token,
+                        },
+                    }
+                ),
+                fetch(BACKEND_BASE_URL + `/project/name/${props.project_id}`, {
+                    headers: {
+                        infiniDocToken: loginState.value.token,
+                    },
+                }),
+                fetch(BACKEND_BASE_URL + `/fileList?limit=100&offset=0`, {
+                    method: "GET",
+                    headers: {
+                        infiniDocToken: loginState.value.token,
+                    },
+                }),
+            ]);
 
-        const response2 = await fetch(
-            BACKEND_BASE_URL + `/project/name/${props.project_id}`,
-            {
-                headers: {
-                    infiniDocToken: loginState.value.token,
-                },
-            }
-        );
-        const data2 = await response2.json();
-        projectData.value.project_name = data2.project_name;
+        const [paragraphsData, nameData, filesData] = await Promise.all([
+            paragraphsResponse.json(),
+            nameResponse.json(),
+            filesResponse.json(),
+        ]);
 
-        const res3 = await fetch(
-            BACKEND_BASE_URL + `/fileList?limit=100&offset=0`,
-            {
-                method: "GET",
-                headers: {
-                    infiniDocToken: loginState.value.token,
-                },
-            }
-        );
-        const data3 = await res3.json();
-        allreferences.value = data3.files.map((file) => ({
+        projectData.value.paragraphs = JSON.parse(paragraphsData.paragraphs);
+        projectData.value.project_name = nameData.project_name;
+        allreferences.value = filesData.files.map((file) => ({
             key: file.sha256,
             label: file.name,
         }));
