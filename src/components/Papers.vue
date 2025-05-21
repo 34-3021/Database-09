@@ -82,6 +82,9 @@
                     :page-count="totalPages"
                     v-model:current-page="curPage"
                 />
+                <el-button type="primary" size="small" @click="exportBibtex"
+                    >导出 BibTeX</el-button
+                >
             </div>
         </div>
     </div>
@@ -215,6 +218,38 @@ const deleteFile = async (seq) => {
         fetchPage(1);
         tableData.value.find((item) => item.seq === seq).deleting = undefined;
     }
+};
+
+const exportBibtex = async () => {
+    const res = await fetch(BACKEND_BASE_URL + `/fileList?limit=100&offset=0`, {
+        method: "GET",
+        headers: {
+            infiniDocToken: loginState.value.token,
+        },
+    });
+    const data = await res.json();
+    // const references = data.files.map((file) => ({
+    //     key: file.sha256,
+    //     label: file.name,
+    // }));
+    let bibtex = "";
+    data.files.forEach((file) => {
+        // label is first 10 characters of file sha256
+        let label = file.sha256.substring(0, 10);
+        bibtex += `@article{${label},\n`;
+        bibtex += `  author = {unknown},\n`;
+        bibtex += `  title = {${file.name}},\n`;
+        bibtex += `  year = {unknown},\n`;
+        bibtex += `  journal = {unknown},\n`;
+        bibtex += `}\n\n`;
+    });
+    const blob = new Blob([bibtex], { type: "text/plain" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "references.bib";
+    a.click();
+    window.URL.revokeObjectURL(url);
 };
 
 const tableData = ref([]);
