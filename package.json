@@ -4,7 +4,7 @@
         "essaycode-parser": "^2.0.3",
         "highlight.js": "^11.11.1",
         "katex": "^0.16.10",
-        "marked": "^15.0.8",
+        "marked": "^16.1.1",
         "vconsole": "^3.15.0",
         "vue": "^3.4.38",
         "vue-draggable-resizable": "^3.0.0",
